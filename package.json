@@ -1,0 +1,24 @@
+{
+  "name": "finder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "types": "./dist/main.d.ts",
+  "module": "./dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "clear && tsc",
+    "npm-bump": "npm version --no-git-tag-version patch",
+    "npm-pub": "npm publish --access public",
+    "pub": "npm run npm-bump && npm run npm-pub"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/debug": "^4.1.7",
+    "@types/node": "^18.7.3",
+    "debug": "^4.3.4"
+  }
+}

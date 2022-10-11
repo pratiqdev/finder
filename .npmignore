@@ -1,0 +1,20 @@
+# DIRECTORIES
+node_modules
+test/
+src/
+notes/
+gulp/
+.github/
+changelogs/
+
+# PACKAGE FILES
+*.lock
+.gitignore
+TODO.md
+CHANGELOG.md
+
+
+# BUILD TOOLS
+tsconfig.json
+.babelrc
+rollup.config.js
