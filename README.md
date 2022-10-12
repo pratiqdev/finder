@@ -2,7 +2,7 @@
 
 **Easily find and accumulate files by name, size, date and type.**
 
-<!-- TODO : add more details to examples, setup, possible issues, contributing -->
+<!-- TODO : add more details to examples, setup, possible issues, contributing, "why" section -->
 
 
 <br />

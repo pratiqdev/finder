@@ -181,7 +181,7 @@ export type T_FinderReturn =  {
 
 }
 
-type T_Finder = (config?: string | T_FinderConfig) => T_FinderReturn;
+export type T_Finder = (config?: string | T_FinderConfig) => T_FinderReturn;
 
 /**
  * 
