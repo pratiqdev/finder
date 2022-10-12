@@ -2,7 +2,7 @@
 
 **Easily find and accumulate files by name, size, date and type.**
 
-
+<!-- TODO : add more details to examples, setup, possible issues, contributing -->
 
 
 <br />
@@ -10,7 +10,7 @@
 ## Usage
 
 
-Install with your preferred package manager.
+Install with your preferred package manager
 ```
 yarn add @pratiq/finder
 ```
@@ -34,14 +34,36 @@ import finder from '@pratiq/finder'
 
 ## Simple Example
 
-Get all files within the current directory, or at a specific path. Finder will return an array of 
-objects with type [T_FinderFileStat](#t_finderfilestat)
+Get all files within the current directory, or at a specific path.  
+
+`finder()` will return an object containing common stats and the array of files found, like:
+
+**path :** The full path of the file  
+**name :** The name of the file  
+**size :** The size of the file (in bytes)  
+
+> For more details about the whole return object, check out [T_FinderReturn](#t_finderreturn)  
+> For more details about the file data object, check out [T_FinderFileStat](#t_finderfilestat)
 
 ```ts
 import finder from '@pratiq/finder'
 
 const allFilesInCurrentDir = finder()
 const myFiles = finder('../myFiles')
+
+console.log( myFiles.length )
+// 3
+console.log( myFiles.files[0] )
+// T_FinderFileStat {
+//    path: '/home/user/Documents/code/myApp/some.config.js',
+//    name: 'some.config.js',
+//    type: 'config.js',
+//    size: 39,
+//    atime: 2022-10-11T22:42:20.088Z,
+//    btime: 2022-10-11T16:50:37.733Z,
+//    ctime: 2022-10-11T22:41:22.419Z,
+//    mtime: 2022-10-11T16:50:49.533Z
+// }
 ```
 
 
@@ -52,11 +74,10 @@ const myFiles = finder('../myFiles')
 Provide advanced config for ignored paths/types and sorting
 
 ```ts
-import finder from '@pratiq/finder'
-
 const fileData = finder({
     paths: ['../myFiles', './src'],
     ignoreTypes: ['md', 'd.ts', 'test.js'],
+    maxDepth: 10,
     sortBy: 'size',
     sortOrder: 'asc'
 })

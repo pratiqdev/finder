@@ -216,7 +216,7 @@ type T_Finder = (config?: string | T_FinderConfig) => T_FinderReturn;
  */
 
 
-const finder: T_Finder = (config: T_FinderConfig = { paths: ['.'] }) => {
+const finder: T_Finder = (config: string | T_FinderConfig = { paths: ['.'] }) => {
     const returnable = {
         length: 0,
         types: [],
