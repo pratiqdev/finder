@@ -1,188 +1,9 @@
-// import {readdir, realpath, lstat} from 'fs/promises'
-import { readdirSync, realpathSync, lstatSync } from 'fs'
-import path, {resolve} from 'path'
-import debug from 'debug'
+import { readdirSync, realpathSync, lstatSync, statSync } from 'fs'
+import { readdir, realpath, lstat, stat } from 'fs/promises'
+import {resolve, join, extname } from 'path'
 
-const log = {
-    init: debug('@pq:finder:init'),
-    getFiles: debug('@pq:finder:getFiles'),
-    type: debug('@pq:finder:type'),
-    dates: debug('@pq:finder:dates'),
-    filter: debug('@pq:finder:filter'),
-    sort: debug('@pq:finder:sort'),
-}
-
-// XTODO Finder is using ".gitignore" as a type - it should ignore the period if found at the beginning of the string
-
-const colors = {
-    reset:"\x1b[0m",
-    bright:"\x1b[1m",
-    // dim:"\x1b[2m",
-    // underscore:"\x1b[4m",
-
-    // red:"\x1b[31m",
-    // green:"\x1b[32m",
-    yellow:"\x1b[33m",
-    // blue:"\x1b[34m",
-    // magenta:"\x1b[35m",
-    // cyan:"\x1b[36m",
-    // white:"\x1b[37m",
-    // grey:"\x1b[2m",
-
-    // RED:"\x1b[31m\x1b[1m",
-    // GREEN:"\x1b[32m\x1b[1m",
-    // YELLOW:"\x1b[33m\x1b[1m",
-    // BLUE:"\x1b[34m\x1b[1m",
-    // MAGENTA:"\x1b[35m\x1b[1m",
-    // CYAN:"\x1b[36m\x1b[1m",
-    // WHITE:"\x1b[37m\x1b[1m",
-    // GREY:"\x1b[2m\x1b[1m",
-}
-
-export type T_FinderConfig = {
-
-    /** Array of path strings to search within 
-     * @example paths: ['myDir', '../../this-whole-dir'], */
-    paths: string[];
-
-    /** Array of paths to ignore 
-     * @example ignorePaths: ['../tests'], */
-    ignorePaths?: string[];
-
-    /** Array of file types to ignore.
-     * @example ignoreTypes: ['test.js'], */
-    ignoreTypes?: string[];
-
-    /** Only return files that match the provided types.
-     * @example onlyTypes: ['md', 'txt'], */
-    onlyTypes?: string[];
-
-    /** Maximum depth to recursively search directories during search.  
-     * Defaults to 1.
-     * @example maxDepth: 8, */
-    maxDepth?: number;
-
-    /** Only return files modified after the provided date.  
-     * @example modifiedAfter: '01/24/1991', */
-    modifiedAfter?: T_FinderDateEntry;
-
-    /** Only return files modified before the provided date.  
-     * @example modifiedBefore: '01/24/1991', */
-    modifiedBefore?: T_FinderDateEntry;
-
-     /** Only return files created after the provided date.  
-     * @example createdAfter: '01/24/1991', */
-    createdAfter?: T_FinderDateEntry;
-
-    /** Only return files created before the provided date.  
-     * @example createdBefore: '01/24/1991', */
-    createdBefore?: T_FinderDateEntry;
-
-    /** Sort the resulting file data by name, date, type, .etc 
-     * @example sortBy: 'name' */
-    sortBy?: E_FinderSortMethods;
-
-    /** Set the sort order use when sorting by name, size, date, .etc
-     * @example sortOrder: 'desc' */
-    sortOrder?: E_FinderSortOrders;
-}
-
-
-export type T_FinderFileStat = {
-    /** Full path to the file */
-    path: string;
-
-    /** File name - split at last '/' */
-    name: string;
-
-    /** Inferred file type */
-    type: string;
-
-    /** File size (in bytes) */
-    size: number;
-
-    /** File accessed time */
-    atime: Date;
-    
-    /** File birth time */
-    btime: Date;
-    
-    /** File created time */
-    ctime: Date;
-    
-    /** File modified time */
-    mtime: Date;
-}
-
-/** Possible options for sort methods */
-export enum E_FinderSortMethods {
-    NAME = 'name',
-    TYPE = 'type',
-    SIZE = 'size',
-    CREATED = 'created',
-    MODIFIED = 'modified',
-}
-
-/** Possible options for sort orders */
-export enum E_FinderSortOrders {
-    ASC = 'asc',
-    DESC = 'desc'
-}
-
-/** 
- * Date used for filtering or sorting file data.  
- * 
- * **Date object**  
- * returned without modification
- * 
- * **Number**  
- * Interpreted as number of milliseconds since 1 Jan 1970 (a timestamp).  
- * Negative numbers are subtracted from Date.now(): `-60 = 60 seconds ago` 
- * 
- * **String**  
- * Any format supported by the javascript engine, like:   
- * "YYYY/MM/DD",  
- * "MM/DD/YYYY",  
- * "Jan 31 2009",  
- * etc.
- * 
- * **Array**   
- * Interpreted as [year,month,day].  
- * **NOTE:** month is 0-11.
- * 
- * **Object**  
- * Interpreted as an object with year, month and date attributes.  
- * **NOTE:** month is 0-11.
- */
-export type T_FinderDateEntry = Date | string | [number, number, number] | {year:number, month:number, date:number}
-
-
-export type T_FinderReturn =  {
-    /** Total number of files accumulated */
-    length: number;
-
-    /** Base directory of file search */
-    baseDir: null | string;
-
-    /** Array of file types accumulated */
-    types: string[];
-
-    /** Array of file names accumulated */
-    names: string[];
-
-    /** Array of resulting file data */
-    files: T_FinderFileStat[];
-
-    /** The most recently modified or created file */
-    newest: null | T_FinderFileStat;
-
-    /** The least recently modified or created file */
-    oldest: null | T_FinderFileStat;
-
-}
-
-export type T_Finder = (config?: string | T_FinderConfig) => T_FinderReturn;
-
+import { Finder, FinderConfig, FinderSortMethods, FinderSortOrders, DirtMap } from './types.js'
+import { log, colors } from './utils.js'
 /**
  * 
  * @param config 
@@ -216,7 +37,7 @@ export type T_Finder = (config?: string | T_FinderConfig) => T_FinderReturn;
  */
 
 
-const finder: T_Finder = (config: string | T_FinderConfig = { paths: ['.'] }) => {
+const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) => {
     const returnable = {
         length: 0,
         types: [],
@@ -290,12 +111,12 @@ try{
     //~                                                                                 
     //~                                                                                 
     
-    const __dirname = realpathSync('.')
+    const __dirname = await realpath('.')
     log.init('Base path:', __dirname)
     
     
     const DEFAULTS = {
-        ignorePaths: ['node_modules'],
+        ignorePaths: ['node_modules', '.git'],
         ignoreTypes: ['lock'],
     }
 
@@ -316,8 +137,8 @@ try{
             modifiedBefore: null,
             createdAfter:   null,
             createdBefore:  null,
-            sortBy:         E_FinderSortMethods.NAME,
-            sortOrder:      E_FinderSortOrders.ASC,
+            sortBy:         FinderSortMethods.NAME,
+            sortOrder:      FinderSortOrders.ASC,
         }
     }else{
 
@@ -471,7 +292,7 @@ try{
                 log.getFiles('splitting path:', res.split('/').pop())
                 
                 if(numberOfPeriods === 0){
-                    _type = path.extname(finalPath) !== '' ? path.extname(finalPath) : 'txt'
+                    _type = extname(finalPath) !== '' ? extname(finalPath) : 'txt'
                     log.type('No period (plaintext). type = ', _type)
                 }else if(numberOfPeriods === 1 && finalPath.startsWith('.')){
                     _type = '.'
@@ -482,10 +303,8 @@ try{
                     log.type('One period. type =', _type)
                 }
                 else{
-                    // let _split = [...split]
-                    // _split.shift()
                     _type = split
-                        .filter(Boolean) // removes empty extensions (e.g. `filename...txt`)
+                        .filter(Boolean) // removes empty extensions (e.g. `filename.......txt`)
                         .slice(1)
                         .join('.')
 
@@ -618,7 +437,7 @@ try{
     if(SETTINGS.sortBy){
         let sortX = 1
         let sortY = -1
-        if(SETTINGS.sortOrder === E_FinderSortOrders.ASC){
+        if(SETTINGS.sortOrder === FinderSortOrders.ASC){
             sortX = -1
             sortY = 1
             log.sort('Sort order: ASC')
@@ -630,23 +449,23 @@ try{
         // .replace(/\./g, '')
 
         
-        if(SETTINGS.sortBy === E_FinderSortMethods.NAME){
+        if(SETTINGS.sortBy === FinderSortMethods.NAME){
             log.sort('Sorting by: name')
             uniqueFiles = uniqueFiles.sort((a,b) => normalize(a.name) > normalize(b.name) ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === E_FinderSortMethods.SIZE){
+        if(SETTINGS.sortBy === FinderSortMethods.SIZE){
             log.sort('Sorting by: size')
             uniqueFiles = uniqueFiles.sort((a,b) => a.size > b.size ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === E_FinderSortMethods.CREATED){
+        if(SETTINGS.sortBy === FinderSortMethods.CREATED){
             log.sort('Sorting by: created date')
             uniqueFiles = uniqueFiles.sort((a,b) => a.ctime > b.ctime ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === E_FinderSortMethods.MODIFIED){
+        if(SETTINGS.sortBy === FinderSortMethods.MODIFIED){
             log.sort('Sorting by: modified date')
             uniqueFiles = uniqueFiles.sort((a,b) => a.mtime > b.mtime ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === E_FinderSortMethods.TYPE){
+        if(SETTINGS.sortBy === FinderSortMethods.TYPE){
             log.sort('Sorting by: type')
             uniqueFiles = uniqueFiles.sort((a,b) => normalize(a.type) > normalize(b.type) ? sortX : sortY)
         }
@@ -672,12 +491,45 @@ try{
 
 
 
+        
+    const dirtMap:DirtMap = async (path = ".") =>
+        (await stat(path)).isFile ()
+          ? String (await realpath(path))
+          : Promise
+              .all
+                ( (await readdir(path, { withFileTypes: true }))
+                    .filter(p => {
+                        if(
+                            SETTINGS.ignorePaths.includes(path)
+                            || SETTINGS.ignorePaths.includes(p.name)
+                            || SETTINGS.ignoreTypes.includes(extname(p.name))
+                            || SETTINGS.ignorePaths.includes(join(path, p.name))
+                        ){
+                            return false
+                        }
+                        return true
+
+                    })
+                    .map( p => 
+                        dirtMap(join (path, p.name))
+                        .then (obj => ({ [p.name]: obj }))
+                    )
+                )
+                .then (results => {
+                    // console.log('assigning results:', results)
+                     //@ts-ignore
+                    return results ? Object.assign(...results) : {}
+                })
+
+
+    const dirMap = await dirtMap('.')
 
 
 
     return {
         length: uniqueFiles.length,
         baseDir: __dirname,
+        dirMap,
         types,
         names,
         newest,

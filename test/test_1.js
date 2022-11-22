@@ -5,6 +5,7 @@ import finder from '../index.js'
 
 
 const returnTest = (data) => {
+    // console.log('dirMap:', JSON.stringify(data.dirMap, null, 2))
      // T_FinderReturn
      expect(typeof data).to.eq('object')
      expect(typeof data.length).to.eq('number')
@@ -43,18 +44,28 @@ describe('finder | import', () => {
 
 })
 
-describe('finder | results', () => {
+describe.only('finder | results', () => {
 
-    it('finder() | Returns a result object with no arguments', () => {
-        const data = finder()
+    it('finder() | Returns a result object with no arguments', async () => {
+        const data = await finder()
         returnTest(data)
     })
 
-    it('finder("../myPath") | Returns a result object with a string path argument', () => {
-        const data = finder('misc')
+    it('finder("../myPath") | Returns a result object with a string path argument', async () => {
+        const data = await finder('misc')
         returnTest(data)
     })
 
+
+})
+
+describe('finder | dirtMap', () => {
+
+    it('finder() | Returns a directory map in the results object', async () => {
+        const data = await finder()
+        returnTest(data)
+        // console.log(data.dirMap)
+    })
 
 })
 
