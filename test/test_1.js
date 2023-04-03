@@ -1,6 +1,6 @@
 import {expect} from 'chai'
 //@ts-ignore
-import finder from '../index.js'
+import finder from '../dist/index.js'
 
 
 
@@ -44,7 +44,7 @@ describe('finder | import', () => {
 
 })
 
-describe.only('finder | results', () => {
+describe('finder | results', () => {
 
     it('finder() | Returns a result object with no arguments', async () => {
         const data = await finder()

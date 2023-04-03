@@ -1,6 +1,6 @@
 import { readdirSync, realpathSync, lstatSync, statSync } from 'fs'
 import { readdir, realpath, lstat, stat } from 'fs/promises'
-import {resolve, join, extname } from 'path'
+import {resolve, join, extname, basename } from 'path'
 
 import { Finder, FinderConfig, FinderSortMethods, FinderSortOrders, DirtMap } from './types.js'
 import { log, colors } from './utils.js'
@@ -37,7 +37,7 @@ import { log, colors } from './utils.js'
  */
 
 
-const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) => {
+export const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) => {
     const returnable = {
         length: 0,
         types: [],
@@ -52,65 +52,14 @@ const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) 
 try{
     // log_main('Accumulating files with config:', config)
 
-    //~                                                                                 
-    //~                                                                                 
-    //~                                                                                 
-    //~                                                                                 
-
-    //Short code
     function matchRuleShort(str:string, rule:string) {
         var escapeRegex = (str:string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
         return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
     }
 
-    //Explanation code
-    // function matchRuleExpl(str:string, rule:string) {
-    //     // for this solution to work on any string, no matter what characters it has
-    //     var escapeRegex = (str:string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-
-    //     // "."  => Find a single character, except newline or line terminator
-    //     // ".*" => Matches any string that contains zero or more characters
-    //     rule = rule.split("*").map(escapeRegex).join(".*");
-
-    //     // "^"  => Matches any string with the following at the beginning of it
-    //     // "$"  => Matches any string with that in front at the end of it
-    //     rule = "^" + rule + "$"
-
-    //     //Create a regular expression object for matching string
-    //     var regex = new RegExp(rule);
-
-    //     //Returns true if it finds a match, otherwise it returns false
-    //     return regex.test(str);
-    // }
-
-//Examples
-// alert(
- 
-
-//    "1. " + matchRuleShort("bird123", "bird*") + "\n" +
-//     "2. " + matchRuleShort("123bird", "*bird") + "\n" +
-//     "3. " + matchRuleShort("123bird123", "*bird*") + "\n" +
-//     "4. " + matchRuleShort("bird123bird", "bird*bird") + "\n" +
-//     "5. " + matchRuleShort("123bird123bird123", "*bird*bird*") + "\n" +
-//     "6. " + matchRuleShort("s[pe]c 3 re$ex 6 cha^rs", "s[pe]c*re$ex*cha^rs") + "\n" +
-//     "7. " + matchRuleShort("should not match", "should noo*oot match") + "\n"
-// );
 
 
 
-
-
-
-
-
-
-
-
-    //~                                                                                 
-    //~                                                                                 
-    //~                                                                                 
-    //~                                                                                 
-    
     const __dirname = await realpath('.')
     log.init('Base path:', __dirname)
     
@@ -139,6 +88,7 @@ try{
             createdBefore:  null,
             sortBy:         FinderSortMethods.NAME,
             sortOrder:      FinderSortOrders.ASC,
+            replaceBase:    null
         }
     }else{
 
@@ -153,7 +103,8 @@ try{
             createdAfter:   config?.createdAfter        ?? null,
             createdBefore:  config?.createdBefore       ?? null,
             sortBy:         config?.sortBy              ?? null,
-            sortOrder:      config?.sortOrder           ?? null
+            sortOrder:      config?.sortOrder           ?? null,
+            replaceBase:    config?.replaceBase         ?? null
         }
     }
     
@@ -165,15 +116,7 @@ try{
     //&                                                                                        DATES
     var dates = {
         convert:function(d:any) {
-            // Converts the date in d to a date-object. The input can be:
-            //   a date object: returned without modification
-            //  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
-            //   a number     : Interpreted as number of milliseconds
-            //                  since 1 Jan 1970 (a timestamp) 
-            //   a string     : Any format supported by the javascript engine, like
-            //                  "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
-            //  an object     : Interpreted as an object with year, month and date
-            //                  attributes.  **NOTE** month is 0-11.
+
             return (
                 d.constructor === Date ? d :
                 d.constructor === Array ? new Date(d[0],d[1],d[2]) :
@@ -186,13 +129,6 @@ try{
             );
         },
         compare:function(a:any,b:any) {
-            // Compare two dates (could be of any type supported by the convert
-            // function above) and returns:
-            //  -1 : if a < b
-            //   0 : if a = b
-            //   1 : if a > b
-            // NaN : if a or b is an illegal date
-            // NOTE: The code inside isFinite does an assignment (=).
 
             // convert negative time to past
             if(typeof b === 'number' && b < 0){
@@ -207,12 +143,7 @@ try{
             );
         },
         inRange:function(d:any,start:any,end:any) {
-            // Checks if date in d is between dates in start and end.
-            // Returns a boolean or NaN:
-            //    true  : if d is between start and end (inclusive)
-            //    false : if d is before start or after end
-            //    NaN   : if one or more of the dates is illegal.
-            // NOTE: The code inside isFinite does an assignment (=).
+
            return (
                 isFinite(d=this.convert(d).valueOf()) &&
                 isFinite(start=this.convert(start).valueOf()) &&
@@ -295,7 +226,7 @@ try{
                     _type = extname(finalPath) !== '' ? extname(finalPath) : 'txt'
                     log.type('No period (plaintext). type = ', _type)
                 }else if(numberOfPeriods === 1 && finalPath.startsWith('.')){
-                    _type = '.'
+                    _type = _name
                     log.type('Dot file (.env, .gitignore). type = ', _type)
                 }
                 else if(numberOfPeriods === 1){
@@ -359,19 +290,26 @@ try{
                 log.filter('Filtering - no file found')
                 return false
             }
-            log.filter('Filtering data for file:', file.name)
+            log.filter('Filtering data for file:', file.name, 'with file type:', file.type)
+
+            if(SETTINGS.ignoreTypes.includes(file.type)){
+                log.filter(`File type ignored via "ignoreTypes"`)
+                return false;
+            }
     
             if(SETTINGS.ignorePaths.includes(file.name) ){ 
-                log.filter(`File name ignored via "ignorePaths"`)
+                log.filter(`File path ignored via "ignorePaths"`)
                 return false;
-            }else if(SETTINGS.onlyTypes.length){
+            }
+            
+            if(SETTINGS.onlyTypes.length){
                 if(SETTINGS.onlyTypes.includes(file.type) ){
                     log.filter(`File type matches "onlyTypes"`)
                     return true;
+                }else{
+                    log.filter(`File type does not match "onlyTypes"`)
+                    return false
                 }
-            }else if(SETTINGS.ignoreTypes.includes(file.type)){
-                log.filter(`File type ignored via "ignoreTypes"`)
-                return false;
             }else{
                 log.filter(`File passed ignore filter`)
                 return true;
@@ -417,12 +355,13 @@ try{
     //$ For each path provided - getFiles and filter
     const files = SETTINGS.paths.map((path:string) => runFilter(path))
 
+    const baseDirRegExp = new RegExp(__dirname, 'g')
     let uniqueFiles:any[] = []
     const filePathMap:string[] = []
 
     files.flat().forEach((file:any) => {
         if(!filePathMap.includes(file.path)){
-            uniqueFiles.push(file)
+            uniqueFiles.push(SETTINGS.replaceBase ? { ...file, path: file.path.replace(baseDirRegExp, SETTINGS.replaceBase)} : file)
             filePathMap.push(file.path)
         }
     })
@@ -470,66 +409,315 @@ try{
             uniqueFiles = uniqueFiles.sort((a,b) => normalize(a.type) > normalize(b.type) ? sortX : sortY)
         }
     }
-
+    
 
 
     let newest:any = null
     let oldest:any = null
-    let names:string[] = []
+    let names:string[] = uniqueFiles.map(x => x.name)
     let types: string[] = []
 
-    uniqueFiles.forEach(file => {
-        names.push(file.name)
-
+    
+    
+    const fileDirectoryMap:any = {};
+    
+    uniqueFiles.forEach((file) => {
         if(!newest || file.mtime > newest.mtime){ newest = file }
         if(!oldest || file.mtime < newest.mtime){ oldest = file }
-
+    
         if(!types.includes(file.type)){
             types.push(file.type)
         }
-    })
 
+        let currentObj = fileDirectoryMap;
+        let filePath:any
+        if(SETTINGS.replaceBase){
+            filePath = file.path.replace(baseDirRegExp, SETTINGS.replaceBase).split('/');
+        }else{
+            filePath = file.path.split('/');
+        }
+        filePath.forEach((pathSegment:any, index:number) => {
+            if (!currentObj[pathSegment]) {
+                if(names.includes(pathSegment)){
+                    currentObj[pathSegment] = file.path;
+                }else{
+                    currentObj[pathSegment] = {};
+                }
+            }
+            currentObj = currentObj[pathSegment];
+            
+            // if (currentObj[pathSegment]) {
+                // currentObj = file;
+            // }
+        });
 
-
+     
+    });
+    
+    
+    // uniqueFiles.forEach((file) => {
+    //     let filePath
+    //     if(SETTINGS.replaceBase){
+    //         filePath = file.path.replace(baseDirRegExp, SETTINGS.replaceBase).split('/');
+    //     }else{
+    //         filePath = file.path.split('/');
+    //     }
+    //     let currentObj = fileDirectoryMap;
         
-    const dirtMap:DirtMap = async (path = ".") =>
-        (await stat(path)).isFile ()
-          ? String (await realpath(path))
-          : Promise
-              .all
-                ( (await readdir(path, { withFileTypes: true }))
-                    .filter(p => {
-                        if(
-                            SETTINGS.ignorePaths.includes(path)
-                            || SETTINGS.ignorePaths.includes(p.name)
-                            || SETTINGS.ignoreTypes.includes(extname(p.name))
-                            || SETTINGS.ignorePaths.includes(join(path, p.name))
-                        ){
-                            return false
-                        }
-                        return true
-
-                    })
-                    .map( p => 
-                        dirtMap(join (path, p.name))
-                        .then (obj => ({ [p.name]: obj }))
-                    )
-                )
-                .then (results => {
-                    // console.log('assigning results:', results)
-                     //@ts-ignore
-                    return results ? Object.assign(...results) : {}
-                })
+    //     filePath.forEach((pathSegment:any, index:number) => {
+    //       if (!currentObj[pathSegment]) {
+    //         currentObj[pathSegment] = {};
+    //       }
+    //       currentObj = currentObj[pathSegment];
+          
+    //       if (index === filePath.length - 1) {
+    //         currentObj = file.isFile() ? file.path : file;
+    //       }
+    //     });
+      
+    //     if (!newest || file.mtime > newest.mtime) {
+    //       newest = file;
+    //     }
+    //     if (!oldest || file.mtime < newest.mtime) {
+    //       oldest = file;
+    //     }
+      
+    //     if (!types.includes(file.type)) {
+    //       types.push(file.type);
+    //     }
+    //   });
 
 
-    const dirMap = await dirtMap('.')
+
+
+        // uniqueFiles.forEach(file => {
+        //     const path = file.isDirectory ? file.path : file.dirname;
+        //     const parts = path.split('/')
+        //     let obj = fileDirectoryMap;
+        //     for (let i = 0; i < parts.length; i++) {
+        //         const part = parts[i];
+        //         if (part === '') continue;
+        //         if (!obj[part]) {
+        //             obj[part] = {};
+        //         }
+        //         obj = obj[part];
+        //     }
+        //     if (file.isFile) {
+        //         obj[file.name] = file.path;
+        //     }
+        // });
+
+    //     // Remove empty directory objects
+    //     function removeEmptyDirectories(obj:any) {
+    //         Object.keys(obj).forEach(key => {
+    //             if (typeof obj[key] === 'object') {
+    //                 removeEmptyDirectories(obj[key]);
+    //                 if (Object.keys(obj[key]).length === 0) {
+    //                     delete obj[key];
+    //                 }
+    //             }
+    //         });
+    //     }
+
+    // removeEmptyDirectories(fileDirectoryMap);
+
+
+    // const dirtMap:DirtMap = async (path = ".") =>
+    //     (await stat(path)).isFile ()
+    //       ? SETTINGS.replaceBase ? String (await realpath(path)).replace(baseDirRegExp, SETTINGS.replaceBase) : String (await realpath(path))
+    //       : Promise
+    //           .all
+    //             ( (await readdir(path, { withFileTypes: true }))
+    //                 .filter(p => {
+    //                     let ext = extname(p.name)
+    //                     ext = ext.startsWith('.') ? ext.substring(1, ext.length) : ext
+    //                     ext = ext === '' ? p.name : ext
+
+    //                     log.filter(`>> Testing dirtmap file: ${p.name} with ext: ${ext}`)
+    //                     if(
+    //                         SETTINGS.ignorePaths.includes(path)
+    //                         || SETTINGS.ignorePaths.includes(p.name)
+    //                         || SETTINGS.ignoreTypes.includes(ext)
+    //                         || SETTINGS.ignorePaths.includes(join(path, p.name))
+    //                         || (SETTINGS.onlyTypes.length && ext && !SETTINGS.onlyTypes.includes(ext))
+    //                     ){
+    //                         log.filter(`dirMap excluded file: ${p.name}`)
+    //                         return false
+    //                     }
+    //                     // if(extname(p.name) && names.includes(p.name)){
+    //                         log.filter(`dirMap accepted file: ${p.name} with extension: ${ext}`)
+    //                         return true
+    //                     // }else{
+    //                     //     log.filter(`>>>> File "${p.name}" DOES NOT exist in uniqueFiles - excluding from dirMap`)
+    //                     //     return false
+    //                     // }
+
+    //                 })
+    //                 .map( p => 
+    //                     dirtMap(join (path, p.name))
+    //                     .then (obj => names.includes(p.name) ? ({ [p.name]: obj }) : ({}))
+    //                 )
+    //             )
+    //             .then (results => {
+    //                 // console.log('assigning results:', results)
+    //                 try{
+    //                     //@ts-ignore
+    //                     results = results ? Object.assign(...results) : {}
+    //                     return results
+    //                 }catch(err){
+    //                     return {}
+    //                 }
+    //             })
+
+    
+
+
+    //~
+    // type DirtMap = (path: string) => Promise<{ [key: string]: any }>;
+
+    // const dirtMap: DirtMap = async (path = ".") => {
+    // const fileMap: { [key: string]: any } = {};
+
+    // if ((await stat(path)).isFile()) {
+    //     const realPath = await realpath(path);
+    //     const filePath = SETTINGS.replaceBase
+    //     ? String(realPath).replace(baseDirRegExp, SETTINGS.replaceBase)
+    //     : String(realPath);
+    //     const ext = extname(path).replace(/^\./, "");
+    //     if (names.includes(path) && !SETTINGS.ignoreTypes.includes(ext)) {
+    //     fileMap[basename(path, `.${ext}`)] = filePath;
+    //     }
+    // } else {
+    //     const children = await readdir(path, { withFileTypes: true });
+    //     const childPromises = children
+    //     .filter(
+    //         (child) =>
+    //         !SETTINGS.ignorePaths.includes(path) &&
+    //         !SETTINGS.ignorePaths.includes(child.name) &&
+    //         !SETTINGS.ignorePaths.includes(join(path, child.name))
+    //     )
+    //     .map(async (child) => {
+    //         const childPath = join(path, child.name);
+    //         const ext = extname(child.name).replace(/^\./, "");
+    //         if (
+    //         child.isDirectory() ||
+    //         (names.includes(childPath) && !SETTINGS.ignoreTypes.includes(ext))
+    //         ) {
+    //         return dirtMap(childPath).then((obj) => {
+    //             if (Object.keys(obj).length > 0) {
+    //             fileMap[child.name] = obj;
+    //             }
+    //         });
+    //         }
+    //     });
+
+    //     await Promise.allSettled(childPromises);
+    // }
+
+    // return fileMap;
+    // };
+
+    // const dirtMap:DirtMap = async (path = ".") => {
+    //     const files = await readdir(path, { withFileTypes: true });
+      
+    //     const filteredFiles = files.filter((file) => {
+    //       let ext = extname(file.name);
+    //       ext = ext.startsWith('.') ? ext.substring(1, ext.length) : ext;
+    //       ext = ext === '' ? file.name : ext;
+      
+    //       if (
+    //         SETTINGS.ignorePaths.includes(path) ||
+    //         SETTINGS.ignorePaths.includes(file.name) ||
+    //         SETTINGS.ignoreTypes.includes(ext) ||
+    //         SETTINGS.ignorePaths.includes(join(path, file.name)) ||
+    //         (SETTINGS.onlyTypes.length && ext && !SETTINGS.onlyTypes.includes(ext))
+    //       ) {
+    //         return false;
+    //       } else {
+    //         return true //names.includes(file.name);
+    //       }
+    //     });
+      
+    //     const filePromises = filteredFiles.map((file) => {
+    //       const filePath = join(path, file.name);
+    //       return dirtMap(filePath).then((obj) => ({
+    //         [file.name]: obj
+    //       }));
+    //     });
+      
+    //     const results = await Promise.all(filePromises);
+      
+    //     try {
+    //       //@ts-ignore
+    //       const mergedResults = Object.assign(...results);
+    //       return mergedResults;
+    //     } catch (err) {
+    //       return {};
+    //     }
+    //   };
+      
+
+    
+
+
+    //~
+
+
+    // const dirMap = await dirtMap('.')
+
+    // console.log('>>Created dirMap:', dirMap)
+
+
+
+
+
+    // async function generateFileMap(fileNames:string[]) {
+    //     const fileMap:any = {};
+      
+    //     await Promise.all(fileNames.map(async (fileName) => {
+    //       const filePath = resolve(fileName);
+    //       const isDirectory = statSync(filePath).isDirectory();
+      
+    //       if (isDirectory) {
+    //         const directoryContents = await readdir(filePath);
+    //         fileMap[fileName] = await generateFileMap(directoryContents.map((directoryItem:any) => join(fileName, directoryItem)));
+    //       } else {
+    //         fileMap[basename(fileName)] = filePath;
+    //       }
+    //     }));
+      
+    //     return fileMap;
+    //   }
+
+    //   async function generateFileMap2(fileNames:string[]) {
+    //     const fileMap:any = {};
+      
+    //     await Promise.all(fileNames.map(async (fileName:string) => {
+    //       const filePath = resolve(fileName);
+    //       const isDirectory = statSync(filePath).isDirectory();
+      
+    //       if (isDirectory) {
+    //         const directoryContents = await readdir(filePath);
+    //         fileMap[basename(fileName)] = await generateFileMap(directoryContents.map((directoryItem:string) => join(filePath, directoryItem)));
+    //       } else {
+    //         fileMap[basename(fileName, extname(fileName))] = filePath;
+    //       }
+    //     }));
+      
+    //     return fileMap;
+    //   }
+
+    // const directoryPath = __dirname;
+    // const directoryContents = await readdir(directoryPath);
+    // const fileMap = await generateFileMap2(uniqueFiles.map(f => f.path));
+
 
 
 
     return {
         length: uniqueFiles.length,
         baseDir: __dirname,
-        dirMap,
+        dirMap: fileDirectoryMap,
         types,
         names,
         newest,

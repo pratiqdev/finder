@@ -48,6 +48,12 @@ export type FinderConfig = {
     /** Set the sort order use when sorting by name, size, date, .etc
      * @example sortOrder: 'desc' */
     sortOrder?: FinderSortOrders;
+
+    /** Replace the full file path with this string/path
+     * @example replaceBase: '<base>/'
+     * outputs: '<base>/path/to/file.txt'
+     */
+    replaceBase?: null | string;
 }
 
 
