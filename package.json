@@ -1,6 +1,6 @@
 {
   "name": "@pratiq/finder",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Configurable file accumulator for Node.js",
   "scripts": {
     "test": "clear && tsup && mocha",
