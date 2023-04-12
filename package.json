@@ -29,7 +29,7 @@
     "README.md",
     "./dist"
   ],
-  "main": "dist/main.js",
+  "main": "index.js",
   "module": "dist/main.mjs",
   "types": "./dist/main.d.ts"
 }
