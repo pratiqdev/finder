@@ -1,6 +1,6 @@
 {
   "name": "@pratiq/finder",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Configurable file accumulator for Node.js",
   "scripts": {
     "test": "clear && tsup && mocha",
@@ -29,7 +29,6 @@
     "README.md",
     "./dist"
   ],
-
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "./dist/index.d.ts"
