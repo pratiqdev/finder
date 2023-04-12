@@ -37,7 +37,7 @@ import { log, colors } from './utils.js'
  */
 
 
-export const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) => {
+const finder: Finder = async (config: string | FinderConfig = { paths: ['.'] }) => {
     const returnable = {
         length: 0,
         types: [],

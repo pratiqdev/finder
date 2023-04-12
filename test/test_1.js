@@ -1,20 +1,22 @@
-import {expect} from 'chai'
+// import {expect} from 'chai'
 //@ts-ignore
-import finder from '../dist/index.js'
+// import finder from '../dist/index.js'
+const { expect } = require('chai')
+const finder = require("../index.js")
 
 
 
 const returnTest = (data) => {
     // console.log('dirMap:', JSON.stringify(data.dirMap, null, 2))
-     // T_FinderReturn
-     expect(typeof data).to.eq('object')
-     expect(typeof data.length).to.eq('number')
-     expect(typeof data.baseDir).to.eq('string')
-     expect(Array.isArray(data.types)).to.eq(true)
-     expect(Array.isArray(data.names)).to.eq(true)
-     expect(Array.isArray(data.files)).to.eq(true)
-     expect(!Array.isArray(data.newest) && typeof data.newest === 'object').to.eq(true)
-     expect(!Array.isArray(data.oldest) && typeof data.oldest === 'object').to.eq(true)
+    // T_FinderReturn
+    expect(typeof data).to.eq('object')
+    expect(typeof data.length).to.eq('number')
+    expect(typeof data.baseDir).to.eq('string')
+    expect(Array.isArray(data.types)).to.eq(true)
+    expect(Array.isArray(data.names)).to.eq(true)
+    expect(Array.isArray(data.files)).to.eq(true)
+    expect(!Array.isArray(data.newest) && typeof data.newest === 'object').to.eq(true)
+    expect(!Array.isArray(data.oldest) && typeof data.oldest === 'object').to.eq(true)
 
 
     // T_FinderFileStat
@@ -68,7 +70,6 @@ describe('finder | dirtMap', () => {
     })
 
 })
-
 
 describe('finder | advanced config', () => {
 

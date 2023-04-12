@@ -2,8 +2,6 @@
   "name": "@pratiq/finder",
   "version": "1.0.19",
   "description": "Configurable file accumulator for Node.js",
-  "types": "./dist/index.d.ts",
-  "type": "module",
   "scripts": {
     "test": "clear && tsup && mocha",
     "build": "clear && tsup",
@@ -31,23 +29,8 @@
     "README.md",
     "./dist"
   ],
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "format": [
-      "esm"
-    ],
-    "clean": true,
-    "dts": true
-  },
+
   "main": "dist/index.js",
-  "module": "dist/index.js",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js",
-      "require": "./dist/index.js",
-      "import": "./dist/index.js"
-    }
-  }
+  "module": "dist/index.mjs",
+  "types": "./dist/index.d.ts"
 }
