@@ -61,6 +61,12 @@ describe('finder | Function', () => {
 describe('finder | Config', () => {
     beforeEach(() => {
         mockFs({
+            'symlink_to_file1': mockFs.symlink({
+                path: '/dir1/file1.txt',
+            }),
+            'symlink_to_file9': mockFs.symlink({
+                path: '/dir3/subdir2/subdir3/file9.js',
+            }),
             dir1: {
                 'file1.txt': 'content1',
                 'file2.js': 'content2',
@@ -93,7 +99,7 @@ describe('finder | Config', () => {
                     subdir6: {
                         'file14.js': 'content14',
                         'file15.md': 'content14',
-                    }
+                    },
                 }
 
             },
