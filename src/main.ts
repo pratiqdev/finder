@@ -61,8 +61,8 @@ const finder: Finder = (config: string | FinderConfig = { paths: ['.'] }) => {
 try{
 
 
-    const __dirname = realpathSync('.')
-    log.init('Base path:', __dirname)
+    const basePath = realpathSync('.')
+    log.init('Base path:', basePath)
     
     
     const DEFAULTS = {
@@ -127,7 +127,7 @@ try{
 
     //&                                                                                     SETTINGS
     let SETTINGS:any = {}
-    let recurseDepth = 0
+    let recurseDepth = -1
 
 
     if(typeof config === 'string'){
@@ -144,7 +144,7 @@ try{
 
         // SETTINGS = {
         //     maxDepth:       config?.maxDepth            ?? 100,
-        //     paths:          config?.paths               ?? [__dirname],
+        //     paths:          config?.paths               ?? [basePath],
         //     ignorePaths:    config?.ignorePaths         ?? [],
         //     ignoreTypes:    config?.ignoreTypes         ?? [],
         //     onlyTypes:      config?.onlyTypes           ?? [],
@@ -209,18 +209,31 @@ try{
         try {
             log.getFiles('Getting files from path:', _path)
             let direntsArray = getDirents(_path);
+
             const files: any[] = direntsArray.map((dirent: Dirent | string) => {
-                if (SETTINGS.ignorePaths.includes(typeof dirent === 'string' ? dirent : dirent.name)) {
-                    log.getFiles('Ignoring path:', typeof dirent === 'string' ? dirent : dirent.name);
+                let filePath = typeof dirent === 'string' ? dirent : dirent.name
+                // recurseDepth = -1
+                if (SETTINGS.ignorePaths.includes(filePath)) {
+                    log.getFiles('Ignoring path:', filePath);
                     return;
                 }
                 const { resolvedPath, isDirectory } = getPathDetails(dirent, _path);
                 log.getFiles('Resolved path:', resolvedPath);
                 if (isDirectory) {
                     log.getFiles('Path is directory');
-                    recurseDepth++;
-                    if (recurseDepth < SETTINGS.maxDepth) {
-                        log.getFiles(`Recursing at depth:`, recurseDepth);
+                    // recurseDepth++;
+                    let currentDepth = 1
+                    if(resolvedPath.includes(basePath)){
+                        let pathSegment = resolvedPath?.trim()?.split(basePath)[1] ?? '/' // remove the base from the path
+                        let trimmedPath = pathSegment.startsWith('/') // if the path starts with '/' remove it
+                            ? pathSegment.substring(1)
+                            : pathSegment
+                        
+                        currentDepth = trimmedPath.split('/').length 
+                        console.log('>>>', currentDepth)
+                    }
+                    if (currentDepth <= SETTINGS.maxDepth) {
+                        log.getFiles(`Recursing at depth:`, currentDepth);
                         return getFiles(resolvedPath);
                     } else {
                         log.getFiles(`Max recurse depth, returning empty array`);
@@ -232,6 +245,7 @@ try{
                     return getFileData(resolvedPath, resolvedPathStats);
                 }
             });
+
             return Array.prototype.concat(...files);
         } catch (ERR) {
             const err: any = ERR;
@@ -241,7 +255,7 @@ try{
                     colors.reset + `   Unable to locate path ` +
                     colors.bright + `"${err.message.split("lstat '")[1].replace("'", '')}"\n` +
                     colors.reset + `   in ` +
-                    colors.bright + `"${__dirname}"\n` +
+                    colors.bright + `"${basePath}"\n` +
                     colors.reset
                 );
             } else {
@@ -324,7 +338,7 @@ try{
     //&                                                                                        START
     const files = SETTINGS.paths.map((path:string) => runFilter(path))
 
-    const baseDirRegExp = new RegExp(__dirname, 'g')
+    const baseDirRegExp = new RegExp(basePath, 'g')
     let uniqueFiles:any[] = []
     const filePathMap:string[] = []
 
@@ -417,7 +431,7 @@ try{
     
     return {
         length: uniqueFiles.length,
-        baseDir: __dirname,
+        baseDir: basePath,
         dirMap: fileDirectoryMap,
         types,
         names,

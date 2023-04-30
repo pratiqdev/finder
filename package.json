@@ -4,6 +4,7 @@
   "description": "Configurable file accumulator for Node.js",
   "scripts": {
     "test": "clear && tsup && mocha",
+    "debug": "clear && tsup && DEBUG=@pq:* mocha",
     "build": "clear && tsup",
     "npm-bump": "npm version --no-git-tag-version patch",
     "npm-pub": "npm publish --access public",

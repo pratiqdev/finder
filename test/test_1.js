@@ -56,7 +56,7 @@ describe('finder | Function', () => {
     })
 })
 
-describe('finder | paths', () => {
+describe.only('finder | Config', () => {
     beforeEach(() => {
         mockFs({
             dir1: {
@@ -190,7 +190,7 @@ describe('finder | paths', () => {
         expect(f3.names).to.not.include('file1.txt')
     })
 
-    it('Finds types specified by onlyTpes', () => {
+    it('Finds types specified by onlyTypes', () => {
         const f1 = finder({
             onlyTypes: ['md']
         })
@@ -210,6 +210,36 @@ describe('finder | paths', () => {
         expect(f2.names).to.not.include('file15.md')
     })
 
+    it('Ignored types overrides "onlyTypes', () => {
+        const f1 = finder({
+            onlyTypes: ['md', 'txt'],
+            ignoreTypes: ['txt']
+        })
+
+        expect(f1.names).to.include('file4.md')
+        expect(f1.names).to.not.include('file1.txt')
+    })
+
+    it.only('Only recurses to specified depth by "maxDepth"', () => {
+        // const f1 = finder()
+        const f2 = finder({
+            // paths: ['dir1'],
+            replaceBase: '.',
+            maxDepth: 1,
+        })
+
+        console.log(f2.names)
+        // console.log(f2.files)
+        console.log(f2.dirMap)
+
+        // expect(f1.names).to.include('file1.txt')
+        // expect(f1.names).to.include('file15.md')
+        
+        // expect(f2.names).to.include('file1.txt')
+        // expect(f2.names).to.include('file5.js')
+        // expect(f2.names).to.not.include('file15.md')
+    })
+
 
 
 
@@ -222,7 +252,7 @@ describe('finder | advanced config', () => {
     // it.skip('ignorePaths: ignores files within the provided paths')
     // it.skip('ignoreTypes: ignores provided types')
     // it.skip('onlyTypes: returns only files matching provided types')
-    it.skip('onlyTypes: if ignoreTypes has same value as onlyTypes - choose correctly')
+    // it.skip('onlyTypes: if ignoreTypes has same value as onlyTypes - choose correctly')
     it.skip('maxDepth: stops recursion at the provided depth')
     
     // use fs to append to file
