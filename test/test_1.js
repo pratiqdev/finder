@@ -138,7 +138,7 @@ describe('finder | paths', () => {
 
     })
 
-    it('Searches for files in the provided paths config property', () => {
+    it('Searches for files in the provided array of "paths"', () => {
         const f4 = finder({
             paths: ['dir1', 'dir2', 'dir3']
         })
@@ -156,7 +156,7 @@ describe('finder | paths', () => {
 
     })
 
-    it('Ignores files at specified paths', () => {
+    it('Ignores files at specified paths by "ignorePaths"', () => {
         const f1 = finder({
             paths: ['dir4'],
             ignorePaths: ['subdir6']
@@ -171,7 +171,7 @@ describe('finder | paths', () => {
 
     })
 
-    it('Ignores types if specified', () => {
+    it('Ignores types if specified by "ignoreTypes"', () => {
         const f1 = finder()
         const f2 = finder({
             ignoreTypes: ['js']
@@ -187,6 +187,27 @@ describe('finder | paths', () => {
         expect(f2.names).to.not.include('file2.js')
 
         expect(f3.names).to.not.include('file4.md')
+        expect(f3.names).to.not.include('file1.txt')
+    })
+
+    it('Finds types specified by onlyTpes', () => {
+        const f1 = finder({
+            onlyTypes: ['md']
+        })
+
+        const f2 = finder({
+            onlyTypes: ['js', 'txt']
+        })
+
+        expect(f1.names).to.include('file15.md')
+        expect(f1.names).to.include('file4.md')
+        expect(f1.names).to.not.include('file1.txt')
+        expect(f1.names).to.not.include('file2.js')
+        
+        expect(f2.names).to.include('file1.txt')
+        expect(f2.names).to.include('file2.js')
+        expect(f2.names).to.not.include('file4.md')
+        expect(f2.names).to.not.include('file15.md')
     })
 
 
@@ -199,8 +220,8 @@ describe('finder | advanced config', () => {
 
     // it.skip('path: finds files within the provided paths')
     // it.skip('ignorePaths: ignores files within the provided paths')
-    it.skip('ignoreTypes: ignores provided types')
-    it.skip('onlyTypes: returns only files matching provided types')
+    // it.skip('ignoreTypes: ignores provided types')
+    // it.skip('onlyTypes: returns only files matching provided types')
     it.skip('onlyTypes: if ignoreTypes has same value as onlyTypes - choose correctly')
     it.skip('maxDepth: stops recursion at the provided depth')
     
