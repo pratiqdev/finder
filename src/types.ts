@@ -123,17 +123,19 @@ export type FinderFileStat = {
     /** File size (in bytes) */
     size: number;
 
-    /** File accessed time */
-    atime: Date;
+    // /** File accessed time */
+    // atime: Date;
     
-    /** File birth time */
-    btime: Date;
+    // /** File birth time */
+    // btime: Date;
     
-    /** File created time */
-    ctime: Date;
+    // /** File created time */
+    // ctime: Date;
     
-    /** File modified time */
-    mtime: Date;
+    // /** File modified time */
+    // mtime: Date;
+    modified: Date;
+    created: Date;
 }
 
 export type FinderReturn =  {

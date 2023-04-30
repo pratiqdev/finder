@@ -27,10 +27,12 @@ const returnTest = (data) => {
     expect(typeof file1.name).to.eq('string')
     expect(typeof file1.type).to.eq('string')
     expect(typeof file1.size).to.eq('number')
-    expect(Object.prototype.toString.call(file1.atime)).to.eq('[object Date]')
-    expect(Object.prototype.toString.call(file1.btime)).to.eq('[object Date]')
-    expect(Object.prototype.toString.call(file1.ctime)).to.eq('[object Date]')
-    expect(Object.prototype.toString.call(file1.mtime)).to.eq('[object Date]')
+    // expect(Object.prototype.toString.call(file1.atime)).to.eq('[object Date]')
+    // expect(Object.prototype.toString.call(file1.btime)).to.eq('[object Date]')
+    // expect(Object.prototype.toString.call(file1.ctime)).to.eq('[object Date]')
+    // expect(Object.prototype.toString.call(file1.mtime)).to.eq('[object Date]')
+    expect(Object.prototype.toString.call(file1.created)).to.eq('[object Date]')
+    expect(Object.prototype.toString.call(file1.modified)).to.eq('[object Date]')
 }
 
 
@@ -56,7 +58,7 @@ describe('finder | Function', () => {
     })
 })
 
-describe.only('finder | Config', () => {
+describe('finder | Config', () => {
     beforeEach(() => {
         mockFs({
             dir1: {
@@ -94,6 +96,38 @@ describe.only('finder | Config', () => {
                     }
                 }
 
+            },
+            dir5: {
+                'a.md': mockFs.file({
+                    btime: new Date("2022-01-01T12:30:00"),
+                    mtime: new Date("2022-01-01T12:30:00")
+                }),
+                'b.md': mockFs.file({
+                    btime: new Date("2022-01-01T12:31:00"),
+                    mtime: new Date("2022-01-01T12:31:00")
+                }),
+                'c.md': mockFs.file({
+                    btime: new Date("2022-01-01T12:31:01"),
+                    mtime: new Date("2022-01-01T12:31:01")
+                }),
+                'd.md': mockFs.file({
+                    btime: new Date("2022-01-01T12:30:00"),
+                    mtime: new Date("2022-01-01T12:30:00")
+                }),
+
+
+                'z.md': mockFs.file({
+                    btime: new Date("2021-01-03T12:30:00"),
+                    mtime: new Date("2021-01-01T12:30:00")
+                }),
+                'y.md': mockFs.file({
+                    btime: new Date("2021-01-02T12:30:00"),
+                    mtime: new Date("2021-01-02T12:30:00")
+                }),
+                'x.md': mockFs.file({
+                    btime: new Date("2021-01-01T12:30:00"),
+                    mtime: new Date("2021-01-03T12:30:00")
+                }),
             }
         });
     });
@@ -220,24 +254,22 @@ describe.only('finder | Config', () => {
         expect(f1.names).to.not.include('file1.txt')
     })
 
-    it.only('Only recurses to specified depth by "maxDepth"', () => {
-        // const f1 = finder()
+    it('Only recurses to specified depth by "maxDepth"', () => {
+        const f1 = finder()
         const f2 = finder({
-            // paths: ['dir1'],
-            replaceBase: '.',
-            maxDepth: 1,
+            maxDepth: 2,
         })
 
-        console.log(f2.names)
+        // console.log(f2.names)
         // console.log(f2.files)
-        console.log(f2.dirMap)
+        // console.log(f2.dirMap)
 
-        // expect(f1.names).to.include('file1.txt')
-        // expect(f1.names).to.include('file15.md')
+        expect(f1.names).to.include('file1.txt')
+        expect(f1.names).to.include('file15.md')
         
-        // expect(f2.names).to.include('file1.txt')
-        // expect(f2.names).to.include('file5.js')
-        // expect(f2.names).to.not.include('file15.md')
+        expect(f2.names).to.include('file1.txt')
+        expect(f2.names).to.include('file5.js')
+        expect(f2.names).to.not.include('file15.md')
     })
 
 
@@ -253,7 +285,7 @@ describe('finder | advanced config', () => {
     // it.skip('ignoreTypes: ignores provided types')
     // it.skip('onlyTypes: returns only files matching provided types')
     // it.skip('onlyTypes: if ignoreTypes has same value as onlyTypes - choose correctly')
-    it.skip('maxDepth: stops recursion at the provided depth')
+    // it.skip('maxDepth: stops recursion at the provided depth')
     
     // use fs to append to file
     it.skip('modifiedAfter: only return files modified after the provided date') 

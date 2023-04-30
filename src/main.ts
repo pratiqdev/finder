@@ -115,10 +115,12 @@ try{
             name: finalPath,
             type: _type,
             size: resolvedPathStats.size,
-            atime: resolvedPathStats.atime,
-            btime: resolvedPathStats.birthtime,
-            ctime: resolvedPathStats.ctime,
-            mtime: resolvedPathStats.mtime
+            // atime: resolvedPathStats.atime,
+            // btime: resolvedPathStats.birthtime,
+            // ctime: resolvedPathStats.ctime,
+            // mtime: resolvedPathStats.mtime,
+            modified: resolvedPathStats.mtime,
+            created: resolvedPathStats.birthtime ?? resolvedPathStats.ctime
         }
     }
 
@@ -230,7 +232,7 @@ try{
                             : pathSegment
                         
                         currentDepth = trimmedPath.split('/').length 
-                        console.log('>>>', currentDepth)
+                        // console.log('>>>', currentDepth)
                     }
                     if (currentDepth <= SETTINGS.maxDepth) {
                         log.getFiles(`Recursing at depth:`, currentDepth);
@@ -302,25 +304,25 @@ try{
 
         files = files.filter(file => {
             if(SETTINGS.modifiedAfter){
-                let compare = dateFuncs.compare(file.mtime, SETTINGS.modifiedAfter) >= 0 
+                let compare = dateFuncs.compare(file.modified, SETTINGS.modifiedAfter) >= 0 
                 log.dates(`Modified after "${SETTINGS.modifiedAfter}" - ${compare}`)
                 return compare
             }
             
             if(SETTINGS.modifiedBefore){
-                let compare =  dateFuncs.compare(file.mtime, SETTINGS.modifiedBefore) <= 0
+                let compare =  dateFuncs.compare(file.modified, SETTINGS.modifiedBefore) <= 0
                 log.dates(`Modified before "${SETTINGS.modifiedBefore}" - ${compare}`)
                 return compare
             }
             
             if(SETTINGS.createdAfter){
-                let compare = dateFuncs.compare(file.btime, SETTINGS.createdAfter) >= 0
+                let compare = dateFuncs.compare(file.created, SETTINGS.createdAfter) >= 0
                 log.dates(`Created after "${SETTINGS.createdAfter}" - ${compare}`)
                 return compare
             }
             
             if(SETTINGS.createdBefore){
-                let compare = dateFuncs.compare(file.btime, SETTINGS.createdBefore) <= 0
+                let compare = dateFuncs.compare(file.created, SETTINGS.createdBefore) <= 0
                 log.dates(`Created before "${SETTINGS.createdBefore}" - ${compare}`)
                 return compare
             }
