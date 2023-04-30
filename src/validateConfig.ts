@@ -1,4 +1,4 @@
-import { FinderConfig, FinderSortMethods, FinderSortOrders, FinderDateEntry } from './types'; // Adjust the path as needed
+import { FinderConfig } from './types'; // Adjust the path as needed
 
 export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
     const defaultConfig: FinderConfig = {
@@ -39,7 +39,7 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
     ['modifiedAfter', 'modifiedBefore', 'createdAfter', 'createdBefore'].forEach(
         (dateKey) => {
             const dateValue = finalConfig[dateKey as keyof FinderConfig] as
-                | FinderDateEntry
+                | Date
                 | null;
 
             if (
@@ -57,25 +57,32 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
 
     if (
         finalConfig.sortBy &&
-        !Object.values(FinderSortMethods).includes(finalConfig.sortBy)
+        !['name','size','date','type','created','modified'].includes(finalConfig.sortBy)
     ) {
         throw new TypeError(
-            'Config Validation Error:\n"sortBy" must be a valid FinderSortMethods value (name | type | size | created | modified)'
+            'Config Validation Error:\n"sortBy" must be a valid SortMethod value (name | type | size | created | modified)'
         );
     }
 
     if (
         finalConfig.sortOrder &&
-        !Object.values(FinderSortOrders).includes(finalConfig.sortOrder)
+        !['asc', 'desc'].includes(finalConfig.sortOrder)
     ) {
         throw new TypeError(
-            'Config Validation Error:\n"sortOrder" must be a valid FinderSortOrders value (asc | desc)'
+            'Config Validation Error:\n"sortOrder" must be a valid SortOrder value (asc | desc)'
         );
     }
 
     if (finalConfig.replaceBase && typeof finalConfig.replaceBase !== 'string') {
         throw new TypeError('Config Validation Error:\n"replaceBase" must be a string');
     }
+    const DEFAULTS = {
+        ignorePaths: ['node_modules', '.git'],
+        ignoreTypes: ['lock'],
+    }
+
+    if (!finalConfig.ignoreTypes) finalConfig.ignoreTypes = DEFAULTS.ignoreTypes
+    if (!finalConfig.ignorePaths) finalConfig.ignorePaths = DEFAULTS.ignorePaths
 
     return finalConfig;
 }

@@ -1,8 +1,8 @@
 import { readdirSync, realpathSync, lstatSync, statSync, Stats, readlinkSync } from 'fs'
 import type { Dirent } from 'fs'
-import {resolve, join, extname, basename } from 'path'
+import {resolve, extname } from 'path'
 
-import { Finder, FinderConfig, FinderSortMethods, FinderSortOrders, DirtMap } from './types.js'
+import { Finder, FinderConfig } from './types.js'
 import { log, colors } from './utils.js'
 import { validateConfig } from './validateConfig.js'
 
@@ -25,26 +25,16 @@ import { validateConfig } from './validateConfig.js'
 
 /**
  * 
- * @param config 
- * @returns [paths]
  * 
- * @example
- * interface config {
- *     paths: string[];   
- *     ignorePaths?: string[];  
- *     ignoreTypes?: string[];  
- *     onlyTypes?: string[];  
- *     maxDepth?: number;  
- *     modifiedAfter?: string;  
- *     modifiedBefore?: string;  
- *     createdAfter?: string;  
- *     createdBefore?: string;  
- * }
- *
- * const paths = await finder({
+ * const data = finder({
  *      paths: ['myFiles', 'other/file.js'],
  *      ignoreTypes: ['test.js'],
- *      modifiedAfter: '03/21/1978'
+ *      modifiedAfter: '03/21/1978',
+ * })
+ * 
+ * const { 
+ * 
+ * }
  * 
  * 
  * 
@@ -128,9 +118,7 @@ try{
 
 
     //&                                                                                     SETTINGS
-    let SETTINGS:any = {}
-    let recurseDepth = -1
-
+    let SETTINGS:FinderConfig = { paths: [] }
 
     if(typeof config === 'string'){
         SETTINGS = validateConfig({
@@ -138,47 +126,20 @@ try{
         })
     }else{
         SETTINGS = validateConfig(config)
-
-        // if(typeof config.maxDepth !== 'number'){
-        //     console.log(`maxDepth must be a number. Recieved ${typeof config.maxDepth}`)
-        //     config.maxDepth = null
-        // }
-
-        // SETTINGS = {
-        //     maxDepth:       config?.maxDepth            ?? 100,
-        //     paths:          config?.paths               ?? [basePath],
-        //     ignorePaths:    config?.ignorePaths         ?? [],
-        //     ignoreTypes:    config?.ignoreTypes         ?? [],
-        //     onlyTypes:      config?.onlyTypes           ?? [],
-        //     modifiedAfter:  config?.modifiedAfter       ?? null,
-        //     modifiedBefore: config?.modifiedBefore      ?? null,
-        //     createdAfter:   config?.createdAfter        ?? null,
-        //     createdBefore:  config?.createdBefore       ?? null,
-        //     sortBy:         config?.sortBy              ?? null,
-        //     sortOrder:      config?.sortOrder           ?? null,
-        //     replaceBase:    config?.replaceBase         ?? null
-        // }
     }
     
-    // SETTINGS.ignoreTypes.push(...DEFAULTS.ignoreTypes)
-    // SETTINGS.ignorePaths.push(...DEFAULTS.ignorePaths)
     log.init('Settings:', SETTINGS)
+
 
 
     //&                                                                                   DATE FUNCS
     var dateFuncs = {
-        convert:function(d:any) {
-
-            return (
-                d.constructor === Date ? d :
-                d.constructor === Array ? new Date(d[0],d[1],d[2]) :
-                //@ts-ignore
-                d.constructor === Number ? new Date(d) :
-                //@ts-ignore
-                d.constructor === String ? new Date(d) :
-                typeof d === "object" ? new Date(d.year,d.month,d.date || d.day) :
-                NaN
-            );
+        convert:function(d:any):Date {
+            return typeof d === 'string' || typeof d === 'number'
+                ? new Date(d)
+                : d instanceof Date
+                    ? d
+                    : new Date(d)
         },
         compare:function(a:any,b:any) {
 
@@ -215,7 +176,7 @@ try{
             const files: any[] = direntsArray.map((dirent: Dirent | string) => {
                 let filePath = typeof dirent === 'string' ? dirent : dirent.name
                 // recurseDepth = -1
-                if (SETTINGS.ignorePaths.includes(filePath)) {
+                if (SETTINGS.ignorePaths?.includes(filePath)) {
                     log.getFiles('Ignoring path:', filePath);
                     return;
                 }
@@ -234,7 +195,7 @@ try{
                         currentDepth = trimmedPath.split('/').length 
                         // console.log('>>>', currentDepth)
                     }
-                    if (currentDepth <= SETTINGS.maxDepth) {
+                    if (SETTINGS.maxDepth && currentDepth <= SETTINGS.maxDepth) {
                         log.getFiles(`Recursing at depth:`, currentDepth);
                         return getFiles(resolvedPath);
                     } else {
@@ -278,17 +239,17 @@ try{
             }
             log.filter('Filtering data for file:', file.name, 'with file type:', file.type)
 
-            if(SETTINGS.ignoreTypes.includes(file.type)){
+            if(SETTINGS.ignoreTypes?.includes(file.type)){
                 log.filter(`File type ignored via "ignoreTypes"`)
                 return false;
             }
     
-            if(SETTINGS.ignorePaths.includes(file.name) ){ 
+            if(SETTINGS.ignorePaths?.includes(file.name) ){ 
                 log.filter(`File path ignored via "ignorePaths"`)
                 return false;
             }
             
-            if(SETTINGS.onlyTypes.length){
+            if(SETTINGS.onlyTypes?.length){
                 if(SETTINGS.onlyTypes.includes(file.type) ){
                     log.filter(`File type matches "onlyTypes"`)
                     return true;
@@ -359,7 +320,7 @@ try{
     if(SETTINGS.sortBy){
         let sortX = 1
         let sortY = -1
-        if(SETTINGS.sortOrder === FinderSortOrders.ASC){
+        if(SETTINGS.sortOrder === 'asc'){
             sortX = -1
             sortY = 1
             log.sort('Sort order: ASC')
@@ -371,23 +332,23 @@ try{
         // .replace(/\./g, '')
 
         
-        if(SETTINGS.sortBy === FinderSortMethods.NAME){
+        if(SETTINGS.sortBy === 'name'){
             log.sort('Sorting by: name')
             uniqueFiles = uniqueFiles.sort((a,b) => normalize(a.name) > normalize(b.name) ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === FinderSortMethods.SIZE){
+        if(SETTINGS.sortBy === 'size'){
             log.sort('Sorting by: size')
             uniqueFiles = uniqueFiles.sort((a,b) => a.size > b.size ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === FinderSortMethods.CREATED){
+        if(SETTINGS.sortBy === 'created'){
             log.sort('Sorting by: created date')
             uniqueFiles = uniqueFiles.sort((a,b) => a.ctime > b.ctime ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === FinderSortMethods.MODIFIED){
+        if(SETTINGS.sortBy === 'modified' || SETTINGS.sortBy === 'date'){
             log.sort('Sorting by: modified date')
             uniqueFiles = uniqueFiles.sort((a,b) => a.mtime > b.mtime ? sortX : sortY)
         }
-        if(SETTINGS.sortBy === FinderSortMethods.TYPE){
+        if(SETTINGS.sortBy === 'type'){
             log.sort('Sorting by: type')
             uniqueFiles = uniqueFiles.sort((a,b) => normalize(a.type) > normalize(b.type) ? sortX : sortY)
         }
@@ -448,7 +409,7 @@ try{
     console.log(
         colors.yellow + `FINDER | ` + err.message || err
     )
-    // console.log(ERR)
+    console.log(ERR)
     return {
         length: 0,
         types: [],

@@ -1,7 +1,25 @@
-
-export type DirtMap = (path:string) => Promise<string | { [x: string]: any; } | { [x: string]: { [x: string]: any; }; }>
-
-
+/**
+ * Config object for finder
+ * 
+ * | Property | Type | Description
+ * |:--|:--|:--|
+ * paths | `string[]` | Array of paths to search within
+ * ignorePaths | `string[]` | Ignore file paths
+ * ignoreTypes | `string[]` | Ignore file types
+ * onlyTypes | `string[]` | Only return matching types
+ * maxDepth | `number` | Maximum directory search depth
+ * modifiedAfter | `Date` | Only return files modified after provided date
+ * modifiedBefore | `Date` | Only return files modified before provided date
+ * createdAfter | `Date` | Only return files created after provided date
+ * createdBefore | `Date` | Only return files created before provided date
+ * sortBy | `SortMethod` | Sort the results with the provided method
+ * sortOrder | `SortOrder`
+ * replaceBase
+ * 
+ * 
+ * 
+ * 
+ */
 export type FinderConfig = {
 
     /** Array of path strings to search within 
@@ -32,83 +50,61 @@ export type FinderConfig = {
     /** Only return files modified after the provided date.  
      * default: null
      * @example modifiedAfter: '01/24/1991', */
-    modifiedAfter?: FinderDateEntry;
+    modifiedAfter?: Date;
 
     /** Only return files modified before the provided date.  
      * default: null
      * @example modifiedBefore: '01/24/1991', */
-     modifiedBefore?: FinderDateEntry;
+     modifiedBefore?: Date;
      
      /** Only return files created after the provided date.  
       * default: null
       * @example createdAfter: '01/24/1991', */
-      createdAfter?: FinderDateEntry;
+      createdAfter?: Date;
       
-      /** Only return files created before the provided date.  
+     /** Only return files created before the provided date. 
+     * Accepts any valid date string or object
      * default: null
-     * @example createdBefore: '01/24/1991', */
-     createdBefore?: FinderDateEntry;
+     * @example 
+     * createdBefore: new Date(...)
+     * createdBefore: '01/24/1991'
+     * createdBefore: 1641076200
+     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
+     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     */
+     createdBefore?: Date;
      
      /** Sort the resulting file data by name, date, type, .etc 
       * default: null
-      * @example sortBy: 'name' */
-     sortBy?: FinderSortMethods;
+      * @example 
+      * sortBy: 'name', 
+      * sortBy: 'size', 
+      * */
+     sortBy?: SortMethod;
      
      /** Set the sort order use when sorting by name, size, date, .etc
-      * @example sortOrder: 'desc' */
-     sortOrder?: FinderSortOrders;
+      * @example 
+      * sortOrder: 'desc',
+      * sortOrder: 'asc',
+      */
+     sortOrder?: SortOrder;
      
      /** Replace the full file path with this string/path
      * default: null
      * @example replaceBase: '<base>/'
      * outputs: '<base>/path/to/file.txt'
      */
-    replaceBase?: null | string;
+    replaceBase?: string;
 }
 
 
 
-/** Possible options for sort methods */
-export enum FinderSortMethods {
-    NAME = 'name',
-    TYPE = 'type',
-    SIZE = 'size',
-    CREATED = 'created',
-    MODIFIED = 'modified',
-}
 
 /** Possible options for sort orders */
-export enum FinderSortOrders {
-    ASC = 'asc',
-    DESC = 'desc'
-}
+export type SortOrder = 'asc' | 'desc'
+/** Possible options for sort methods */
+export type SortMethod = 'name' | 'size' | 'type' | 'created' | 'modified' | 'date'
 
-/** 
- * Date used for filtering or sorting file data.  
- * 
- * **Date object**  
- * returned without modification
- * 
- * **Number**  
- * Interpreted as number of milliseconds since 1 Jan 1970 (a timestamp).  
- * Negative numbers are subtracted from Date.now(): `-60 = 60 seconds ago` 
- * 
- * **String**  
- * Any format supported by the javascript engine, like:   
- * "YYYY/MM/DD",  
- * "MM/DD/YYYY",  
- * "Jan 31 2009",  
- * etc.
- * 
- * **Array**   
- * Interpreted as [year,month,day].  
- * **NOTE:** month is 0-11.
- * 
- * **Object**  
- * Interpreted as an object with year, month and date attributes.  
- * **NOTE:** month is 0-11.
- */
-export type FinderDateEntry = Date | string | [number, number, number] | {year:number, month:number, date:number}
 
 export type FinderFileStat = {
     /** Full path to the file */
@@ -122,19 +118,11 @@ export type FinderFileStat = {
 
     /** File size (in bytes) */
     size: number;
-
-    // /** File accessed time */
-    // atime: Date;
     
-    // /** File birth time */
-    // btime: Date;
-    
-    // /** File created time */
-    // ctime: Date;
-    
-    // /** File modified time */
-    // mtime: Date;
+    /** Last file modification date */
     modified: Date;
+
+    /** File created date */
     created: Date;
 }
 

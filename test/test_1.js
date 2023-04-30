@@ -272,6 +272,13 @@ describe('finder | Config', () => {
         expect(f2.names).to.not.include('file15.md')
     })
 
+    it('Returns files in the correct date range (created before)', () => {
+        const f1 = finder({
+            paths: ['dir5'],
+            createdBefore: '2021'
+        })
+    })
+
 
 
 
