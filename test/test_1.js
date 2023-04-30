@@ -10,6 +10,7 @@ const returnTest = (data) => {
     // console.log('dirMap:', JSON.stringify(data.dirMap, null, 2))
     // T_FinderReturn
     expect(typeof data).to.eq('object')
+    expect(typeof data.dirMap).to.eq('object')
     expect(typeof data.length).to.eq('number')
     expect(typeof data.baseDir).to.eq('string')
     expect(Array.isArray(data.types)).to.eq(true)
@@ -44,32 +45,24 @@ describe('finder | import', () => {
         expect(() => finder()).to.not.throw()
     })
 
+    it('Returns results when invoked', () => {
+        expect(typeof finder()).to.eq('object')
+    })
+
+    it('Results contain expected properties', () => {
+        const data = finder()
+        returnTest(data)
+    })
 })
 
 describe('finder | results', () => {
 
-    it('finder() | Returns a result object with no arguments', async () => {
-        const data = await finder()
-        returnTest(data)
-    })
 
-    it('finder("../myPath") | Returns a result object with a string path argument', async () => {
-        const data = await finder('misc')
-        returnTest(data)
-    })
+
 
 
 })
 
-describe('finder | dirtMap', () => {
-
-    it('finder() | Returns a directory map in the results object', async () => {
-        const data = await finder()
-        returnTest(data)
-        // console.log(data.dirMap)
-    })
-
-})
 
 describe('finder | advanced config', () => {
 

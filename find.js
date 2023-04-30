@@ -1,8 +1,10 @@
-import {finder} from './dist/index.js'
-console.log('>> JS:', finder)
+const finder = require('./index')
+console.log('>> JS-REQUIRE:', finder)
 
-let res = await finder({
+
+const res = finder({
     paths: ['misc/DIR_B'],
     replaceBase: '@'
 })
-console.log(JSON.stringify(res.dirMap))
+
+console.log(JSON.stringify(res.dirMap, null, 2))

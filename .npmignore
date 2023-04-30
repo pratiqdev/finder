@@ -6,6 +6,8 @@ notes/
 gulp/
 .github/
 changelogs/
+_deprecated/
+_notes/
 
 # PACKAGE FILES
 *.lock

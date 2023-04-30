@@ -150,4 +150,4 @@ export type FinderReturn =  {
 
 }
 
-export type Finder = (config?: string | FinderConfig) => Promise<FinderReturn>;
+export type Finder = (config?: string | FinderConfig) => FinderReturn;

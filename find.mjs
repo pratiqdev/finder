@@ -1,2 +1,2 @@
-import {finder} from './dist/index.cjs'
-console.log('>> MJS:', finder)
+import finder from './index.js'
+console.log('>> MJS-IMPORT:', finder)
