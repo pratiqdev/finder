@@ -56,7 +56,7 @@ describe('finder | Function', () => {
     })
 })
 
-describe('finder | results', () => {
+describe('finder | paths', () => {
     beforeEach(() => {
         mockFs({
             dir1: {
@@ -86,10 +86,11 @@ describe('finder | results', () => {
                 subdir4: {
                     'file12.js': 'content12',
                     subdir5: {
-                        'file13.js': 'content11',
+                        'file13.js': 'content13',
                     },
                     subdir6: {
-                        'file14.js': 'content11',
+                        'file14.js': 'content14',
+                        'file15.md': 'content14',
                     }
                 }
 
@@ -99,10 +100,27 @@ describe('finder | results', () => {
 
     afterEach(mockFs.restore);
 
-    it('Searches for files in the provided path', () => {
+    it('Searches current directory if no paths(s) provided', () => {
+        const f4 = finder()
+
+        expect(f4.files.length).to.greaterThan(9)
+        expect(f4.names).to.include('file1.txt')
+        expect(f4.names).to.include('file2.js')
+        expect(f4.names).to.include('file3.txt')
+        expect(f4.names).to.include('file4.md')
+        expect(f4.names).to.include('file5.js')
+        expect(f4.names).to.include('file6.txt')
+        expect(f4.names).to.include('file7.js')
+        expect(f4.names).to.include('file8.js')
+        expect(f4.names).to.include('file9.js')
+
+    })
+
+    it('Searches for files in the provided path string', () => {
         const f1 = finder('dir1')
         const f2 = finder('dir2')
         const f3 = finder('dir3')
+
         expect(f1.files.length).to.eq(2)
         expect(f1.names).to.include('file1.txt')
         expect(f1.names).to.include('file2.js')
@@ -117,11 +135,58 @@ describe('finder | results', () => {
         expect(f3.names).to.include('file7.js')
         expect(f3.names).to.include('file8.js')
         expect(f3.names).to.include('file9.js')
+
+    })
+
+    it('Searches for files in the provided paths config property', () => {
+        const f4 = finder({
+            paths: ['dir1', 'dir2', 'dir3']
+        })
+
+        expect(f4.files.length).to.eq(9)
+        expect(f4.names).to.include('file1.txt')
+        expect(f4.names).to.include('file2.js')
+        expect(f4.names).to.include('file3.txt')
+        expect(f4.names).to.include('file4.md')
+        expect(f4.names).to.include('file5.js')
+        expect(f4.names).to.include('file6.txt')
+        expect(f4.names).to.include('file7.js')
+        expect(f4.names).to.include('file8.js')
+        expect(f4.names).to.include('file9.js')
+
     })
 
     it('Ignores files at specified paths', () => {
-        const f1 = finder('dir4')
-        
+        const f1 = finder({
+            paths: ['dir4'],
+            ignorePaths: ['subdir6']
+        })
+
+        expect(f1.names).to.include('file10.txt')
+        expect(f1.names).to.include('file11.js')
+        expect(f1.names).to.include('file12.js')
+        expect(f1.names).to.include('file13.js')
+        expect(f1.names).to.not.include('file14.js')
+        expect(f1.names).to.not.include('file15.md')
+
+    })
+
+    it('Ignores types if specified', () => {
+        const f1 = finder()
+        const f2 = finder({
+            ignoreTypes: ['js']
+        })
+        const f3 = finder({
+            ignoreTypes: ['txt', 'md']
+        })
+
+        expect(f1.names).to.include('file2.js')
+        expect(f1.names).to.include('file1.txt')
+        expect(f1.names).to.include('file4.md')
+
+        expect(f2.names).to.not.include('file2.js')
+
+        expect(f3.names).to.not.include('file4.md')
     })
 
 
@@ -133,7 +198,7 @@ describe('finder | results', () => {
 describe('finder | advanced config', () => {
 
     // it.skip('path: finds files within the provided paths')
-    it.skip('ignorePaths: ignores files within the provided paths')
+    // it.skip('ignorePaths: ignores files within the provided paths')
     it.skip('ignoreTypes: ignores provided types')
     it.skip('onlyTypes: returns only files matching provided types')
     it.skip('onlyTypes: if ignoreTypes has same value as onlyTypes - choose correctly')

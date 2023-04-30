@@ -1,10 +1,10 @@
-import { readdirSync, realpathSync, lstatSync, statSync, Stats } from 'fs'
+import { readdirSync, realpathSync, lstatSync, statSync, Stats, readlinkSync } from 'fs'
 import type { Dirent } from 'fs'
-import { readdir, realpath, lstat, stat } from 'fs/promises'
 import {resolve, join, extname, basename } from 'path'
 
 import { Finder, FinderConfig, FinderSortMethods, FinderSortOrders, DirtMap } from './types.js'
 import { log, colors } from './utils.js'
+import { validateConfig } from './validateConfig.js'
 
 
 
@@ -70,8 +70,22 @@ try{
         ignoreTypes: ['lock'],
     }
 
+    const deprecated_getDirents = (_path: string): Array<Dirent | string> => {
+        let dirStat: Stats = lstatSync(_path);
+        return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
+    }
+    //+ Added support for symlinks
+    //! No current logic for recursive link resolving
+    //! Add array of visited paths to compare against
     const getDirents = (_path: string): Array<Dirent | string> => {
         let dirStat: Stats = lstatSync(_path);
+        if (dirStat.isSymbolicLink()) {
+            // resolve symlink
+            const resolvedPath = readlinkSync(_path);
+            dirStat = lstatSync(resolvedPath);
+            _path = resolvedPath;
+        }
+        // this is where rcursion starts: try to readdirSync on symlinkA -> contains symlinkB which points to symlinkA
         return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
     }
 
@@ -117,40 +131,35 @@ try{
 
 
     if(typeof config === 'string'){
-        SETTINGS = {
-            maxDepth:       100,
-            paths:          [config],
-            ignorePaths:    [],
-            ignoreTypes:    [],
-            onlyTypes:      [],
-            modifiedAfter:  null,
-            modifiedBefore: null,
-            createdAfter:   null,
-            createdBefore:  null,
-            sortBy:         FinderSortMethods.NAME,
-            sortOrder:      FinderSortOrders.ASC,
-            replaceBase:    null
-        }
+        SETTINGS = validateConfig({
+            paths: [config]
+        })
     }else{
+        SETTINGS = validateConfig(config)
 
-        SETTINGS = {
-            maxDepth:       config?.maxDepth            ?? 100,
-            paths:          config?.paths               ?? [__dirname],
-            ignorePaths:    config?.ignorePaths         ?? [],
-            ignoreTypes:    config?.ignoreTypes         ?? [],
-            onlyTypes:      config?.onlyTypes           ?? [],
-            modifiedAfter:  config?.modifiedAfter       ?? null,
-            modifiedBefore: config?.modifiedBefore      ?? null,
-            createdAfter:   config?.createdAfter        ?? null,
-            createdBefore:  config?.createdBefore       ?? null,
-            sortBy:         config?.sortBy              ?? null,
-            sortOrder:      config?.sortOrder           ?? null,
-            replaceBase:    config?.replaceBase         ?? null
-        }
+        // if(typeof config.maxDepth !== 'number'){
+        //     console.log(`maxDepth must be a number. Recieved ${typeof config.maxDepth}`)
+        //     config.maxDepth = null
+        // }
+
+        // SETTINGS = {
+        //     maxDepth:       config?.maxDepth            ?? 100,
+        //     paths:          config?.paths               ?? [__dirname],
+        //     ignorePaths:    config?.ignorePaths         ?? [],
+        //     ignoreTypes:    config?.ignoreTypes         ?? [],
+        //     onlyTypes:      config?.onlyTypes           ?? [],
+        //     modifiedAfter:  config?.modifiedAfter       ?? null,
+        //     modifiedBefore: config?.modifiedBefore      ?? null,
+        //     createdAfter:   config?.createdAfter        ?? null,
+        //     createdBefore:  config?.createdBefore       ?? null,
+        //     sortBy:         config?.sortBy              ?? null,
+        //     sortOrder:      config?.sortOrder           ?? null,
+        //     replaceBase:    config?.replaceBase         ?? null
+        // }
     }
     
-    SETTINGS.ignoreTypes.push(...DEFAULTS.ignoreTypes)
-    SETTINGS.ignorePaths.push(...DEFAULTS.ignorePaths)
+    // SETTINGS.ignoreTypes.push(...DEFAULTS.ignoreTypes)
+    // SETTINGS.ignorePaths.push(...DEFAULTS.ignorePaths)
     log.init('Settings:', SETTINGS)
 
 
@@ -421,9 +430,9 @@ try{
 }catch(ERR){
     const err:any = ERR
     console.log(
-        colors.yellow + `FINDER | ERROR:\n` + err.message || err
+        colors.yellow + `FINDER | ` + err.message || err
     )
-    console.log(ERR)
+    // console.log(ERR)
     return {
         length: 0,
         types: [],

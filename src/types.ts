@@ -5,51 +5,61 @@ export type DirtMap = (path:string) => Promise<string | { [x: string]: any; } | 
 export type FinderConfig = {
 
     /** Array of path strings to search within 
+     * default: '.' (current directory)
      * @example paths: ['myDir', '../../this-whole-dir'], */
     paths: string[];
 
     /** Array of paths to ignore 
+     * default: ['node_modules', '.git']
      * @example ignorePaths: ['../tests'], */
-    ignorePaths?: string[];
-
-    /** Array of file types to ignore.
+     ignorePaths?: string[];
+     
+     /** Array of file types to ignore.
+     * default: ['lock']
      * @example ignoreTypes: ['test.js'], */
     ignoreTypes?: string[];
 
     /** Only return files that match the provided types.
+     * default: []
      * @example onlyTypes: ['md', 'txt'], */
     onlyTypes?: string[];
 
     /** Maximum depth to recursively search directories during search.  
-     * Defaults to 1.
+     * default: 100.
      * @example maxDepth: 8, */
     maxDepth?: number;
 
     /** Only return files modified after the provided date.  
+     * default: null
      * @example modifiedAfter: '01/24/1991', */
     modifiedAfter?: FinderDateEntry;
 
     /** Only return files modified before the provided date.  
+     * default: null
      * @example modifiedBefore: '01/24/1991', */
-    modifiedBefore?: FinderDateEntry;
-
+     modifiedBefore?: FinderDateEntry;
+     
      /** Only return files created after the provided date.  
-     * @example createdAfter: '01/24/1991', */
-    createdAfter?: FinderDateEntry;
-
-    /** Only return files created before the provided date.  
+      * default: null
+      * @example createdAfter: '01/24/1991', */
+      createdAfter?: FinderDateEntry;
+      
+      /** Only return files created before the provided date.  
+     * default: null
      * @example createdBefore: '01/24/1991', */
-    createdBefore?: FinderDateEntry;
-
-    /** Sort the resulting file data by name, date, type, .etc 
-     * @example sortBy: 'name' */
-    sortBy?: FinderSortMethods;
-
-    /** Set the sort order use when sorting by name, size, date, .etc
-     * @example sortOrder: 'desc' */
-    sortOrder?: FinderSortOrders;
-
-    /** Replace the full file path with this string/path
+     createdBefore?: FinderDateEntry;
+     
+     /** Sort the resulting file data by name, date, type, .etc 
+      * default: null
+      * @example sortBy: 'name' */
+     sortBy?: FinderSortMethods;
+     
+     /** Set the sort order use when sorting by name, size, date, .etc
+      * @example sortOrder: 'desc' */
+     sortOrder?: FinderSortOrders;
+     
+     /** Replace the full file path with this string/path
+     * default: null
      * @example replaceBase: '<base>/'
      * outputs: '<base>/path/to/file.txt'
      */
@@ -57,31 +67,6 @@ export type FinderConfig = {
 }
 
 
-export type FinderFileStat = {
-    /** Full path to the file */
-    path: string;
-
-    /** File name - split at last '/' */
-    name: string;
-
-    /** Inferred file type */
-    type: string;
-
-    /** File size (in bytes) */
-    size: number;
-
-    /** File accessed time */
-    atime: Date;
-    
-    /** File birth time */
-    btime: Date;
-    
-    /** File created time */
-    ctime: Date;
-    
-    /** File modified time */
-    mtime: Date;
-}
 
 /** Possible options for sort methods */
 export enum FinderSortMethods {
@@ -125,6 +110,31 @@ export enum FinderSortOrders {
  */
 export type FinderDateEntry = Date | string | [number, number, number] | {year:number, month:number, date:number}
 
+export type FinderFileStat = {
+    /** Full path to the file */
+    path: string;
+
+    /** File name - split at last '/' */
+    name: string;
+
+    /** Inferred file type */
+    type: string;
+
+    /** File size (in bytes) */
+    size: number;
+
+    /** File accessed time */
+    atime: Date;
+    
+    /** File birth time */
+    btime: Date;
+    
+    /** File created time */
+    ctime: Date;
+    
+    /** File modified time */
+    mtime: Date;
+}
 
 export type FinderReturn =  {
     /** Total number of files accumulated */
