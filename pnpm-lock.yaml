@@ -24,6 +24,9 @@ devDependencies:
   mocha:
     specifier: ^10.0.0
     version: 10.2.0
+  mock-fs:
+    specifier: ^5.2.0
+    version: 5.2.0
   tsup:
     specifier: ^6.7.0
     version: 6.7.0(typescript@4.9.5)
@@ -835,6 +838,11 @@ packages:
       yargs: 16.2.0
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
+    dev: true
+
+  /mock-fs@5.2.0:
+    resolution: {integrity: sha512-2dF2R6YMSZbpip1V1WHKGLNjr/k48uQClqMVb5H3MOvwc9qhYis3/IWbj02qIg/Y8MDXKFF4c5v0rxx2o6xTZw==}
+    engines: {node: '>=12.0.0'}
     dev: true
 
   /ms@2.1.2:

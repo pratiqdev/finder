@@ -12,45 +12,6 @@ import { log, colors } from './utils.js'
 
 
 
-// Helper functions
-
-const getDirents = (_path: string): Array<Dirent | string> => {
-    let dirStat: Stats = lstatSync(_path);
-    return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
-}
-
-const getPathDetails = (dirent: Dirent | string, _path: string): { resolvedPath: string, isDirectory: boolean } => {
-    const pathName = (typeof dirent === 'string' ? dirent : dirent.name);
-    const resolvedPath: string = resolve(_path === dirent ? '' : _path, pathName);
-    const resolvedPathStats: Stats = lstatSync(resolvedPath);
-    return { resolvedPath, isDirectory: resolvedPathStats.isDirectory() };
-}
-
-const getFileData = (resolvedPath: string, resolvedPathStats: Stats) => {
-    const finalPath = resolvedPath.split('/').pop() ?? '';
-    const split = finalPath.split('.');
-    const numberOfPeriods = (finalPath.match(/\./g) ?? []).length;
-    let _type;
-    if (numberOfPeriods === 0) {
-        _type = extname(finalPath) !== '' ? extname(finalPath) : 'txt';
-    } else if (numberOfPeriods === 1 && finalPath.startsWith('.')) {
-        _type = finalPath;
-    } else if (numberOfPeriods === 1) {
-        _type = split[split.length - 1];
-    } else {
-        _type = split.filter(Boolean).slice(1).join('.');
-    }
-    return {
-        path: resolvedPath,
-        name: finalPath,
-        type: _type,
-        size: resolvedPathStats.size,
-        atime: resolvedPathStats.atime,
-        btime: resolvedPathStats.birthtime,
-        ctime: resolvedPathStats.ctime,
-        mtime: resolvedPathStats.mtime
-    }
-}
 
 
 
@@ -99,13 +60,6 @@ const finder: Finder = (config: string | FinderConfig = { paths: ['.'] }) => {
 
 try{
 
-    function matchRuleShort(str:string, rule:string) {
-        var escapeRegex = (str:string) => str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-        return new RegExp("^" + rule.split("*").map(escapeRegex).join(".*") + "$").test(str);
-    }
-
-
-
 
     const __dirname = realpathSync('.')
     log.init('Base path:', __dirname)
@@ -114,6 +68,44 @@ try{
     const DEFAULTS = {
         ignorePaths: ['node_modules', '.git'],
         ignoreTypes: ['lock'],
+    }
+
+    const getDirents = (_path: string): Array<Dirent | string> => {
+        let dirStat: Stats = lstatSync(_path);
+        return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
+    }
+
+    const getPathDetails = (dirent: Dirent | string, _path: string): { resolvedPath: string, isDirectory: boolean } => {
+        const pathName = (typeof dirent === 'string' ? dirent : dirent.name);
+        const resolvedPath: string = resolve(_path === dirent ? '' : _path, pathName);
+        const resolvedPathStats: Stats = lstatSync(resolvedPath);
+        return { resolvedPath, isDirectory: resolvedPathStats.isDirectory() };
+    }
+
+    const getFileData = (resolvedPath: string, resolvedPathStats: Stats) => {
+        const finalPath = resolvedPath.split('/').pop() ?? '';
+        const split = finalPath.split('.');
+        const numberOfPeriods = (finalPath.match(/\./g) ?? []).length;
+        let _type;
+        if (numberOfPeriods === 0) {
+            _type = extname(finalPath) !== '' ? extname(finalPath) : 'txt';
+        } else if (numberOfPeriods === 1 && finalPath.startsWith('.')) {
+            _type = finalPath;
+        } else if (numberOfPeriods === 1) {
+            _type = split[split.length - 1];
+        } else {
+            _type = split.filter(Boolean).slice(1).join('.');
+        }
+        return {
+            path: resolvedPath,
+            name: finalPath,
+            type: _type,
+            size: resolvedPathStats.size,
+            atime: resolvedPathStats.atime,
+            btime: resolvedPathStats.birthtime,
+            ctime: resolvedPathStats.ctime,
+            mtime: resolvedPathStats.mtime
+        }
     }
 
 
@@ -162,7 +154,7 @@ try{
     log.init('Settings:', SETTINGS)
 
 
-    //&                                                                                  y      DATE FUNCS
+    //&                                                                                   DATE FUNCS
     var dateFuncs = {
         convert:function(d:any) {
 
@@ -204,117 +196,6 @@ try{
     }
 
     //&                                                                                    GET FILES
-    // const getFiles = (_path:string) => {
-    //     try{
-    //     log.getFiles('Getting files from path:', _path)
-    //     let dirStat:Stats = lstatSync(_path)
-    //     let direntsArray:Array<Dirent | string>
-
-    //     if(dirStat.isDirectory()){
-    //         log.getFiles('Path is directory:', _path)
-    //         direntsArray = readdirSync(_path, { withFileTypes: true });
-    //     }else{
-    //         log.getFiles('Path is file:', _path)
-    //         direntsArray = [_path]
-    //     }
-
-
-    //     const files:any[] = direntsArray.map((dirent: Dirent | string) => {
-    //         let pathName:string
-    //         if(typeof dirent === 'string'){
-    //             if (SETTINGS.ignorePaths.includes(dirent)) {
-    //                 log.getFiles('Ignoring path:', dirent)
-    //                 return;
-    //             }
-    //             pathName = dirent
-
-    //         }else{
-    //             if (SETTINGS.ignorePaths.includes(dirent.name)) {
-    //                 log.getFiles('Ignoring path:', dirent.name)
-    //                 return;
-    //             }
-    //             pathName = dirent.name
-    //         }
-
-
-    //         const resolvedPath: string = resolve(_path === dirent ? '' : _path, pathName);
-    //         const resolvedPathStats:Stats = lstatSync(resolvedPath)
-
-    //         log.getFiles('Resolved path:', resolvedPath)
-
-    //         if(resolvedPathStats?.isDirectory()){
-    //             log.getFiles('Path is directory')
-    //             recurseDepth++
-    //             if(recurseDepth < SETTINGS.maxDepth){
-    //                 log.getFiles(`Recursing at depth:`, recurseDepth)
-    //                 return getFiles(resolvedPath)
-    //             }else{
-    //                 log.getFiles(`Max recurse depth, returning empty array`)
-    //                 return []
-    //             }
-    //         }else{
-                
-    //             log.getFiles('Path is directory')
-    //             let finalPath = resolvedPath.split('/').pop() ?? ''
-    //             let numberOfPeriods = (finalPath.match(/\./g) ?? []).length
-    //             let split = finalPath.split('.')
-    //             let _name = resolvedPath.split('/').pop()
-    //             let _type
-            
-    //             log.getFiles('splitting path:', resolvedPath.split('/').pop())
-                
-    //             if(numberOfPeriods === 0){
-    //                 _type = extname(finalPath) !== '' ? extname(finalPath) : 'txt'
-    //                 log.type('No period (plaintext). type = ', _type)
-    //             }else if(numberOfPeriods === 1 && finalPath.startsWith('.')){
-    //                 _type = _name
-    //                 log.type('Dot file (.env, .gitignore). type = ', _type)
-    //             }
-    //             else if(numberOfPeriods === 1){
-    //                 _type = split[split.length - 1]
-    //                 log.type('One period. type =', _type)
-    //             }
-    //             else{
-    //                 _type = split
-    //                     .filter(Boolean) // removes empty extensions (e.g. `filename.......txt`)
-    //                     .slice(1)
-    //                     .join('.')
-
-    //                 log.type('At least one period. type =', _type)
-    //             }
-
-
-
-    //             return {
-    //                 path: resolvedPath,
-    //                 name: _name,
-    //                 type: _type,
-    //                 size: resolvedPathStats.size,
-    //                 atime: resolvedPathStats.atime,
-    //                 btime: resolvedPathStats.birthtime,
-    //                 ctime: resolvedPathStats.ctime,
-    //                 mtime: resolvedPathStats.mtime
-    //             }
-    //         }
-    //     });
-    //     return Array.prototype.concat(...files);
-    //     }catch(ERR){
-    //         const err:any = ERR
-    //         if(err.message && err.message.includes("lstat '")){
-    //             console.log(
-    //                 colors.yellow + `FINDER | PATH ERROR:\n` +
-    //                 colors.reset + `   Unable to locate path ` + 
-    //                 colors.bright + `"${err.message.split("lstat '")[1].replace("'", '')}"\n`+ 
-    //                 colors.reset + `   in ` + 
-    //                 colors.bright + `"${__dirname}"\n` +
-    //                 colors.reset
-    //             )
-    //         }else{
-    //             console.log('FINDER | PATH ERROR:\n', err.message ?? err)
-    //         }
-    //         console.log(ERR)
-    //     }
-    // }
     const getFiles = (_path: string) => {
         try {
             log.getFiles('Getting files from path:', _path)

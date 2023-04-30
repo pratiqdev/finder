@@ -3,6 +3,7 @@
 // import finder from '../dist/index.js'
 const { expect } = require('chai')
 const finder = require("../index.js")
+const mockFs = require('mock-fs')
 
 
 
@@ -35,7 +36,7 @@ const returnTest = (data) => {
 
 
 
-describe('finder | import', () => {
+describe('finder | Function', () => {
 
     it('Provides a function exported as default', () => {
         expect(typeof finder).to.eq('function')
@@ -56,7 +57,72 @@ describe('finder | import', () => {
 })
 
 describe('finder | results', () => {
+    beforeEach(() => {
+        mockFs({
+            dir1: {
+                'file1.txt': 'content1',
+                'file2.js': 'content2',
+            },
+            dir2: {
+                'file3.txt': 'content3',
+                'file4.md': 'content4',
+                subdir: {
+                    'file5.js': 'content5',
+                },
+            },
+            dir3: {
+                'file6.txt': 'content6',
+                subdir2: {
+                    'file7.js': 'content7',
+                    subdir3: {
+                        'file8.js': 'content8',
+                        'file9.js': 'content9',
+                    },
+                },
+            },
+            dir4: {
+                'file10.txt': 'content10',
+                'file11.js': 'content11',
+                subdir4: {
+                    'file12.js': 'content12',
+                    subdir5: {
+                        'file13.js': 'content11',
+                    },
+                    subdir6: {
+                        'file14.js': 'content11',
+                    }
+                }
 
+            }
+        });
+    });
+
+    afterEach(mockFs.restore);
+
+    it('Searches for files in the provided path', () => {
+        const f1 = finder('dir1')
+        const f2 = finder('dir2')
+        const f3 = finder('dir3')
+        expect(f1.files.length).to.eq(2)
+        expect(f1.names).to.include('file1.txt')
+        expect(f1.names).to.include('file2.js')
+        
+        expect(f2.files.length).to.eq(3)
+        expect(f2.names).to.include('file3.txt')
+        expect(f2.names).to.include('file4.md')
+        expect(f2.names).to.include('file5.js')
+
+        expect(f3.files.length).to.eq(4)
+        expect(f3.names).to.include('file6.txt')
+        expect(f3.names).to.include('file7.js')
+        expect(f3.names).to.include('file8.js')
+        expect(f3.names).to.include('file9.js')
+    })
+
+    it('Ignores files at specified paths', () => {
+        const f1 = finder('dir4')
+        
+    })
 
 
 
@@ -66,7 +132,7 @@ describe('finder | results', () => {
 
 describe('finder | advanced config', () => {
 
-    it.skip('path: finds files within the provided paths')
+    // it.skip('path: finds files within the provided paths')
     it.skip('ignorePaths: ignores files within the provided paths')
     it.skip('ignoreTypes: ignores provided types')
     it.skip('onlyTypes: returns only files matching provided types')
