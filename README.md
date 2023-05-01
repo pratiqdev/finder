@@ -1,11 +1,9 @@
 
 
-<h3 align="center">
+<h4 align="center">
+<b><code>@pratiq/finder</code></b>
 
-<b>
-Easily find and accumulate files by name, size, date and type.
-
-
+Easily find and accumulate files by name, size, date and type.  
 [Installation](#installation)
 &nbsp;•&nbsp;
 [Usage](#usage)
@@ -17,9 +15,8 @@ Easily find and accumulate files by name, size, date and type.
 [Extensions](#file-types--extensions)
 &nbsp;•&nbsp;
 [API](#api)
-</h3>
 
-</b>
+</h4>
 
 
 
