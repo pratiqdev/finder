@@ -51,7 +51,7 @@ const createOffsetDate = (offset) => {
         if (match) {
             const value = Math.abs(parseInt(match[1]));
             const unit = match[2];
-            console.log(`Creating offset date from ${value}:${unit}`)
+            // console.log(`Creating offset date from ${value}:${unit}`)
             switch (unit) {
                 case 'd':
                     ms = value * 24 * 60 * 60 * 1000;
@@ -72,14 +72,19 @@ const createOffsetDate = (offset) => {
     } else {
         // throw new Error(`Invalid argument type: ${typeof offset}`);
         let d = new Date(offset)
-        console.log(`Invalid offset argument. Returning date:`, d)
+        // console.log(`Invalid offset argument. Returning date:`, d)
         return d
     }
     let d = new Date(Date.now() - ms)
-    console.log(`Calculated date: ${ms} =>`, d.toString())
+    // console.log(`Calculated date: ${ms} =>`, d.toString())
     return d
 }
-
+/**
+ * 
+ * @param {Date | number | string} date 
+ * @param {boolean | string} symlink 
+ * @returns Mock file or symlink if true
+ */
 const createMockFileWithDate = (date, symlink) => symlink
 ? mockFs.symlink({
     path: symlink,

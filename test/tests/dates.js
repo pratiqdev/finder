@@ -181,36 +181,36 @@ describe('DATES', () => {
 
     it('B. Returns files in the correct date range - createdBefore: (946684800000)', () => {
         const f1 = finder({
-            createdBefore: 956684800000,
             paths: ['./standard'],
-        })
-        // const f2 = finder({
-        //     paths: ['./symlinks'],
-        //     createdBefore: 946684800
-        // })
-        const y1 = getYears(f1)
-        // const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
-        expect(f1.files.length).to.eq(25)
-        // expect(f2.files.length).to.eq(25)
-        expect(y1).to.include('1999')
-        // expect(y2).to.include('1999')
-        expect(y1).to.not.include('2020')
-        // expect(y2).to.not.include('2020')
-    })
-
-    it('H. Returns files in the correct date range - createdAfter: (-720)', () => {
-        const f1 = finder({
-            createdAfter: -720,
-            paths: ['./standard'],
+            createdBefore: 946684800000,
         })
         const f2 = finder({
             paths: ['./symlinks'],
-            createdBefore: -720
+            createdBefore: 946684800000
         })
         const y1 = getYears(f1)
         const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        expect(f1.files.length).to.eq(9)
+        expect(f2.files.length).to.eq(9)
+        expect(y1).to.include('1999')
+        expect(y2).to.include('1999')
+        expect(y1).to.not.include('2020')
+        expect(y2).to.not.include('2020')
+    })
+
+    it('H. Returns files in the correct date range - createdAfter: (-720000)', () => {
+        const f1 = finder({
+            paths: ['./standard'],
+            createdAfter: -720000,
+        })
+        const f2 = finder({
+            paths: ['./symlinks'],
+            createdAfter: -720000
+        })
+        const y1 = getYears(f1)
+        const y2 = getYears(f2)
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
         expect(f1.files.length).to.eq(2)
         expect(f2.files.length).to.eq(2)
         expect(y1).to.include('-10m')
@@ -230,7 +230,7 @@ describe('DATES', () => {
         })
         const y1 = getYears(f1)
         const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
         expect(f1.files.length).to.eq(2)
         expect(f2.files.length).to.eq(2)
         expect(y1).to.include('-10m')
@@ -251,7 +251,7 @@ describe('DATES', () => {
         })
         const y1 = getYears(f1)
         const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
         expect(f1.files.length).to.eq(2)
         expect(f2.files.length).to.eq(2)
         expect(y1).to.include('-10m')
@@ -271,7 +271,7 @@ describe('DATES', () => {
         })
         const y1 = getYears(f1)
         const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
         expect(f1.files.length).to.eq(4)
         expect(f2.files.length).to.eq(4)
         expect(y1).to.include('-10m')
@@ -292,7 +292,7 @@ describe('DATES', () => {
         })
         const y1 = getYears(f1)
         const y2 = getYears(f2)
-        console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
+        // console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
         expect(f1.files.length).to.eq(5)
         expect(f2.files.length).to.eq(5)
         expect(y1).to.include('-10m')
@@ -309,22 +309,22 @@ describe('DATES', () => {
 
     it('I. Returns files in the correct date range (createdAfter: "2000")', () => {
         const f1 = finder({
-            createdAfter: '2000',
             paths: ['./standard'],
+            createdAfter: '2000',
         })
         const f2 = finder({
             paths: ['./symlinks'],
             createdAfter: '2000'
         })
-        const y1 = getYears(f)
+        const y1 = getYears(f1)
         const y2 = getYears(f2)
         // console.log(data.files.map(x => `${x.name}: \n${x.created}`))
-        expect(f1.files.length).to.eq(25)
-        expect(f2.files.length).to.eq(25)
-        expect(y1).to.include('1999')
-        expect(y2).to.include('1999')
-        expect(y1).to.not.include('2020')
-        expect(y2).to.not.include('2020')
+        expect(f1.files.length).to.eq(32)
+        expect(f2.files.length).to.eq(32)
+        expect(y1).to.include('2000')
+        expect(y2).to.include('2000')
+        expect(y1).to.not.include('1999')
+        expect(y2).to.not.include('1999')
     })
 
 
