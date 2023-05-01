@@ -249,10 +249,11 @@ try{
 
         if(SETTINGS.createdAfter || SETTINGS.createdBefore || SETTINGS.modifiedAfter || SETTINGS.modifiedBefore){
             log.dates(`Comparing provided dates:`, {
-                createdAfter: SETTINGS.createdAfter,
-                createdBefore: SETTINGS.createdBefore,
-                modifiedAfter: SETTINGS.modifiedAfter,
-                modifiedBefore: SETTINGS.modifiedBefore,
+                currentTime: new Date().toString(),
+                createdAfter: SETTINGS.createdAfter?.toString(),
+                createdBefore: SETTINGS.createdBefore?.toString(),
+                modifiedAfter: SETTINGS.modifiedAfter?.toString(),
+                modifiedBefore: SETTINGS.modifiedBefore?.toString(),
             })
             
             files = files.filter(file => {
@@ -270,7 +271,7 @@ try{
                 
                 if(SETTINGS.createdAfter){
                     let compare = dateFuncs.compare(file.created, SETTINGS.createdAfter) >= 0
-                    log.dates(`Created after: ${file.created} : ${compare}`)
+                    log.dates(`Created after: ${new Date(file.created)} : ${compare}`)
                     return compare
                 }
                 

@@ -1,42 +1,58 @@
 import { Finder, FinderConfig } from './types'; // Adjust the path as needed
 import { log } from './utils';
 
-function getDateFromNegativeUnixTimestampOrString(negativeUnixTimestampOrString: string | number) {
-    if(!negativeUnixTimestampOrString) {
+function getDateFromNegativeUnixTimestampOrString(timestamp: string | number) {
+    if(!timestamp) {
         log.validate('no timestamp, returning...')
         return
     }
 
-    log.validate('Getting date from time:', negativeUnixTimestampOrString)
-    let timestampInMilliseconds;
-    if (typeof negativeUnixTimestampOrString === 'number' && negativeUnixTimestampOrString < 0) {
-        timestampInMilliseconds = -negativeUnixTimestampOrString * 1000;
-    } else if (typeof negativeUnixTimestampOrString === 'string' && negativeUnixTimestampOrString.startsWith('-')) {
-        const match = negativeUnixTimestampOrString.match(/(-?\d+)([dhm])/);
+    log.validate('Getting date from time:', timestamp)
+    let ms;
+    if (typeof timestamp === 'number' && timestamp < 0) {
+        // usage of a number will always refer to negative time travel
+        ms = Math.abs(timestamp * 1000);
+        log.validate('Time is a "number". Calculating negative time offset:', ms)
+
+    } else if (typeof timestamp === 'string' && timestamp.startsWith('-')) {
+        log.validate(`Time is an "offset string". Parsing offset...`)
+        // only parse time strings this way if they start with '-'
+        const match = timestamp.match(/(-?\d+)([dhm])/);
         if (match) {
             const value = parseInt(match[1]);
             const unit = match[2];
+            log.validate(`Parsed offset: ${value}  ${unit}`)
             switch (unit) {
                 case 'd':
-                    timestampInMilliseconds = -value * 24 * 60 * 60 * 1000;
+                    ms = value * 24 * 60 * 60 * 1000;
                     break;
                 case 'h':
-                    timestampInMilliseconds = -value * 60 * 60 * 1000;
+                    ms = value * 60 * 60 * 1000;
                     break;
                 case 'm':
-                    timestampInMilliseconds = -value * 60 * 1000;
+                    ms = value * 60 * 1000;
                     break;
                 default:
-                    throw new Error(`Invalid time unit: ${unit}`);
+                    // throw new Error(`Invalid time unit (${unit}) from "${timestamp}"`);
+                    ms = value * 1000;
             }
+            log.validate(`Calculated milliseconds: ${ms}`)
         } else {
-            throw new Error(`Invalid time string: ${negativeUnixTimestampOrString}`);
+            throw new Error(`Invalid time string: ${timestamp}`);
         }
     } else {
-        // throw new Error(`Invalid argument type: ${typeof negativeUnixTimestampOrString}`);
-        return  new Date(negativeUnixTimestampOrString)
+        let d = new Date(timestamp)
+        log.validate(`Invalid offset argument. Returning date:`, d)
+        return d
     }
-    return new Date(timestampInMilliseconds);
+    let d = new Date(Date.now() - ms)
+    log.validate(`Final date:`, {
+        date: d,
+        string: d.toString(),
+        unix: d.getTime(),
+        offset: ms
+    })
+    return d
 }
 
 

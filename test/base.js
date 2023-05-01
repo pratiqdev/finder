@@ -33,7 +33,52 @@ const returnTest = (data) => {
     expect(Object.prototype.toString.call(file1.modified)).to.eq('[object Date]')
 }
 
-const createOffsetDate = (offset) => new Date(Date.now() - (offset * 1000))
+const counter = {
+    value: 1,
+    inc: (str) => `${counter.value++} ${str}`,
+    reset: () => counter.value = 0,
+}
+
+const createOffsetDate = (offset) => {
+
+    let ms;
+    if (typeof offset === 'number'  && timestamp < 0) {
+        // usage of a number will always refer to negative time travel
+        ms = Math.abs(offset * 1000);
+    } else if (typeof offset === 'string' && offset.startsWith('-')) {
+        // only parse time strings this way if they start with '-'
+        const match = offset.match(/(-?\d+)([dhm])/);
+        if (match) {
+            const value = parseInt(match[1]);
+            const unit = match[2];
+            console.log(`Creating offset date from ${value}:${unit}`)
+            switch (unit) {
+                case 'd':
+                    ms = value * 24 * 60 * 60 * 1000;
+                    break;
+                case 'h':
+                    ms = value * 60 * 60 * 1000;
+                    break;
+                case 'm':
+                    ms = value * 60 * 1000;
+                    break;
+                default:
+                    ms = value * 1000;
+                    // throw new Error(`Invalid time unit: ${unit}`);
+            }
+        } else {
+            throw new Error(`Invalid time string: ${offset}`);
+        }
+    } else {
+        // throw new Error(`Invalid argument type: ${typeof offset}`);
+        let d = new Date(offset)
+        console.log(`Invalid offset argument. Returning date:`, d)
+        return d
+    }
+    let d = new Date(Date.now() + ms)
+    console.log(`Calculated date: ${ms} =>`, d.toString())
+    return d
+}
 
 const createMockFileWithDate = (date, symlink) => symlink
 ? mockFs.symlink({
@@ -58,4 +103,5 @@ module.exports = {
     returnTest,
     createMockFileWithDate,
     createOffsetDate,
+    counter
 }

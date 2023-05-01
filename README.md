@@ -1,13 +1,53 @@
-# Finder
 
 **Easily find and accumulate files by name, size, date and type.**
 
 <!-- TODO : add more details to examples, setup, possible issues, contributing, "why" section -->
 
 
+
 <br />
 
-## Installation
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Simple Example](#simple-example)
+  - [Advanced Example](#advanced-example)
+- [Config Options](#config-options)
+  - [paths](#paths)
+  - [ignorePaths](#ignorepaths)
+  - [ignoreTypes](#ignoretypes)
+  - [onlyTypes](#onlytypes)
+  - [maxDepth](#maxdepth)
+  - [modifiedAfter](#modifiedafter)
+  - [modifiedBefore](#modifiedbefore)
+  - [createdAfter](#createdafter)
+  - [createdBefore](#createdbefore)
+  - [sortBy](#sortby)
+  - [sortOrder](#sortorder)
+- [Date Formats](#date-formats)
+  - [Standard Date Formats](#standard-date-formats)
+  - [Relative Date Formats](#relative-date-formats)
+- [Types](#types)
+  - [T\_FinderConfig](#t_finderconfig)
+  - [T\_FinderFileStat](#t_finderfilestat)
+  - [E\_FinderSortMethods](#e_findersortmethods)
+  - [E\_FinderSortOrders](#e_findersortorders)
+  - [`asc`](#asc)
+  - [Filter](#filter)
+    - [File Types](#file-types)
+  - [License](#license)
+
+
+
+
+
+
+
+
+
+
+<br />
+
+# Installation
 
 
 Install with your preferred package manager
@@ -24,14 +64,21 @@ const finder = require('@pratiq/finder')
 
 
 
+
+
+
+
+
+
+
+
+
+
 <br />
-<hr />
-<!-- ================================================================================= -->
+<br />
+<br />
 
-
-
-
-## Usage
+# Usage
 
 
 ```ts
@@ -40,20 +87,18 @@ import finder from '@pratiq/finder'
 const data = finder({
     paths: ['../my/content'],
     ignoreTypes: ['d.ts'],
-    modifiedAfter: 
+    modifiedAfter: '-10m'
 })
 ```
+
+
+
+
+
 <br />
 
-### Simple Example
-
+## Simple Example
 Get all files within the current directory, or at a specific path.  
-
-`finder()` will return an object containing common stats and the array of files found, like:
-
-**path :** The full path of the file  
-**name :** The name of the file  
-**size :** The size of the file (in bytes)  
 
 
 ```ts
@@ -62,41 +107,201 @@ import finder from '@pratiq/finder'
 const myFiles = finder('../my/content')
 
 console.log( myFiles.files[0] )
-// FileStat {
-//    path: '/home/user/Documents/code/myApp/some.config.js',
-//    name: 'some.config.js',
-//    type: 'config.js',
-//    size: 39,
-//    created: 2022-10-11T16:50:49.533Z,
-//    modified: 2022-10-11T16:50:49.533Z
-// }
 ```
+
+
+
+
 
 
 <br />
 
-### Advanced Example
+## Advanced Example
 
 Provide advanced config for ignored paths/types and sorting
 
 ```ts
 const fileData = finder({
-    paths: ['../myFiles', './src'],
-    ignoreTypes: ['md', 'd.ts', 'test.js'],
-    maxDepth: 10,
-    sortBy: 'size',
-    sortOrder: 'asc'
+    paths: ['../myFiles', './src'],         // search recursively in these two directories
+    ignoreTypes: ['md', 'd.ts', 'test.js'], // ignore files with these three types
+    modifiedAfter: '-15m',                  // only files modified within the last 15 minutes
+    maxDepth: 10,                           // do not search deeper than 10 nested directories
+    sortBy: 'size',                         // sort results by size (fileData.files)
+    sortOrder: 'asc'                        // sort order of results (fileData.files)
 })
 ```
 
 
+
+
+
+
+
+
 <br />
-<hr />
+<br />
+<br />
+
 <!-- ================================================================================= -->
 
-## Types
+# Config Options
 
-### T_FinderConfig
+## paths
+An array of path strings pointing to directories to search within. Defaults to the current 
+directory.
+```ts
+finder({
+    paths: [ './my/content', 'dist/bin' ],
+})
+```
+<br />
+
+## ignorePaths
+Array of paths to ignore.
+```ts
+finder({
+    ignorePaths: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## ignoreTypes
+ Array of file types to ignore. Overrides matching `onlyTypes`.
+```ts
+finder({
+    ignoreTypes: [ 'd.ts', 'config.json' ]
+})
+```
+<br />
+
+## onlyTypes
+Only return files that match the provided types. Will be overridden by matching `ignoreTypes`.
+```ts
+finder({
+    onlyTypes: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## maxDepth
+Maximum depth to recursively search directories during search. A value of 1 will only search 
+a single level of nesting. Defaults to 100.
+```ts
+finder({
+    maxDepth: 3
+})
+```
+<br />
+
+## modifiedAfter
+Only return files modified after the provided date. 
+Accepts any valid date type
+```ts
+finder({
+    modifiedAfter:  
+})
+```
+<br />
+
+## modifiedBefore
+O
+```ts
+finder({
+    modifiedBefore: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## createdAfter
+O
+```ts
+finder({
+    createdAfter: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## createdBefore
+O
+```ts
+finder({
+    createdBefore: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## sortBy
+O
+```ts
+finder({
+    sortBy: [ 'node_modules', '.git' ]
+})
+```
+<br />
+
+## sortOrder
+O
+```ts
+finder({
+    sortOrder: [ 'node_modules', '.git' ]
+})
+```
+
+
+
+
+
+
+
+
+
+
+
+<br />
+<br />
+<br />
+<!-- ================================================================================= -->
+
+# Date Formats
+
+The properties that accept dates like `createdBefore` or `modifiedAfter` can accept any of the
+following types and values as valid dates. Any value that is not an instance of `Date` will be passed
+as the only argument to the date constructor.
+
+## Standard Date Formats
+
+| Type | Value | Description |
+|:--|:--|:--|
+| `Date` | `new Date()` | The object returned from the `Date` constructor. 
+| `Date` | `Date.now()` | A timestamp in unix format
+| `number` | `1682960778228` | A timestamp in unix format
+| `string` | `3/16/23` | A simple date string in any format accepted by the date constructor.
+
+## Relative Date Formats
+| Type | Value | Description |
+|:--|:--|:--|
+| `number` | `-300` | **Negative** values are interpreted as a negative time offset in seconds (5 minutes)
+| `string` | `-20m` | Time strings that begin with `-` and end with `d`, `h`, `m`
+
+
+
+
+
+
+
+
+
+
+
+
+<br />
+<br />
+<br />
+<!-- ================================================================================= -->
+
+# Types
+
+## T_FinderConfig
 
 The config object provided to `finder({ ... })`
 
@@ -149,7 +354,7 @@ export type T_FinderConfig = {
 }
 ```
 
-### T_FinderFileStat
+## T_FinderFileStat
 Object returned for each accumulated file
 
 ```ts
@@ -175,7 +380,7 @@ export type T_FinderFileStat = {
 ```
 
 
-### E_FinderSortMethods 
+## E_FinderSortMethods 
 Possible options for sort methods
 
 ```ts
@@ -188,7 +393,7 @@ export enum E_FinderSortMethods {
 }
 ```
 
-### E_FinderSortOrders
+## E_FinderSortOrders
 Possible options for sort orders
 
 ## `asc`
