@@ -54,16 +54,7 @@ try{
     const basePath = realpathSync('.')
     log.init('Base path:', basePath)
     
-    
-    const DEFAULTS = {
-        ignorePaths: ['node_modules', '.git'],
-        ignoreTypes: ['lock'],
-    }
-
-    const deprecated_getDirents = (_path: string): Array<Dirent | string> => {
-        let dirStat: Stats = lstatSync(_path);
-        return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
-    }
+ 
     //+ Added support for symlinks
     //! No current logic for recursive link resolving
     //! Add array of visited paths to compare against
@@ -107,10 +98,6 @@ try{
             name: finalPath,
             type: _type,
             size: resolvedPathStats.size,
-            // atime: resolvedPathStats.atime,
-            // btime: resolvedPathStats.birthtime,
-            // ctime: resolvedPathStats.ctime,
-            // mtime: resolvedPathStats.mtime,
             modified: resolvedPathStats.mtime,
             created: resolvedPathStats.birthtime ?? resolvedPathStats.ctime
         }
@@ -260,33 +247,42 @@ try{
             }
         })
 
-        files = files.filter(file => {
-            if(SETTINGS.modifiedAfter){
-                let compare = dateFuncs.compare(file.modified, SETTINGS.modifiedAfter) >= 0 
-                log.dates(`Modified after "${SETTINGS.modifiedAfter}" - ${compare}`)
-                return compare
-            }
+        if(SETTINGS.createdAfter || SETTINGS.createdBefore || SETTINGS.modifiedAfter || SETTINGS.modifiedBefore){
+            log.dates(`Comparing provided dates:`, {
+                createdAfter: SETTINGS.createdAfter,
+                createdBefore: SETTINGS.createdBefore,
+                modifiedAfter: SETTINGS.modifiedAfter,
+                modifiedBefore: SETTINGS.modifiedBefore,
+            })
             
-            if(SETTINGS.modifiedBefore){
-                let compare =  dateFuncs.compare(file.modified, SETTINGS.modifiedBefore) <= 0
-                log.dates(`Modified before "${SETTINGS.modifiedBefore}" - ${compare}`)
-                return compare
-            }
-            
-            if(SETTINGS.createdAfter){
-                let compare = dateFuncs.compare(file.created, SETTINGS.createdAfter) >= 0
-                log.dates(`Created after "${SETTINGS.createdAfter}" - ${compare}`)
-                return compare
-            }
-            
-            if(SETTINGS.createdBefore){
-                let compare = dateFuncs.compare(file.created, SETTINGS.createdBefore) <= 0
-                log.dates(`Created before "${SETTINGS.createdBefore}" - ${file.created} : ${compare}`)
-                return compare
-            }
-            log.dates('No date restrictions set, returning true')
-            return true
-        })
+            files = files.filter(file => {
+                if(SETTINGS.modifiedAfter){
+                    let compare = dateFuncs.compare(file.modified, SETTINGS.modifiedAfter) >= 0 
+                    log.dates(`Modified after: ${file.modified} :${compare}`)
+                    return compare
+                }
+                
+                if(SETTINGS.modifiedBefore){
+                    let compare =  dateFuncs.compare(file.modified, SETTINGS.modifiedBefore) <= 0
+                    log.dates(`Modified before: ${file.modified} :${compare}`)
+                    return compare
+                }
+                
+                if(SETTINGS.createdAfter){
+                    let compare = dateFuncs.compare(file.created, SETTINGS.createdAfter) >= 0
+                    log.dates(`Created after: ${file.created} : ${compare}`)
+                    return compare
+                }
+                
+                if(SETTINGS.createdBefore){
+                    let compare = dateFuncs.compare(file.created, SETTINGS.createdBefore) <= 0
+                    log.dates(`Created before: ${file.created} : ${compare}`)
+                    return compare
+                }
+                log.dates('No date restrictions set, returning true')
+                return true
+            })
+        }
 
         return files
     
@@ -408,7 +404,7 @@ try{
     console.log(
         colors.yellow + `FINDER | ` + err.message || err
     )
-    console.log(ERR)
+    log.init(ERR)
     return {
         length: 0,
         types: [],

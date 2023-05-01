@@ -248,3 +248,8 @@ Filter by or ignore any file types. File types should not include leading period
 onlyTypes: ['d.ts','config.test.js'],
 ignoreTypes: ['js', 'txt', '.']
 ```
+
+
+## License
+
+**MIT**
