@@ -48,22 +48,43 @@ export type FinderConfig = {
     maxDepth?: number;
 
     /** Only return files modified after the provided date.  
+     * Accepts any valid date string or object (exclusive)
      * default: null
-     * @example modifiedAfter: '01/24/1991', */
+     * @example 
+     * createdBefore: new Date(...)
+     * createdBefore: '01/24/1991'
+     * createdBefore: 1641076200
+     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
+     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     */
     modifiedAfter?: Date;
 
     /** Only return files modified before the provided date.  
+     * Accepts any valid date string or object (exclusive)
      * default: null
-     * @example modifiedBefore: '01/24/1991', */
+     * @example 
+     * createdBefore: new Date(...)
+     * createdBefore: '01/24/1991'
+     * createdBefore: 1641076200
+     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
+     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     */
      modifiedBefore?: Date;
      
      /** Only return files created after the provided date.  
+     * Accepts any valid date string or object (exclusive)
       * default: null
-      * @example createdAfter: '01/24/1991', */
+     * @example 
+     * createdBefore: new Date(...)
+     * createdBefore: '01/24/1991'
+     * createdBefore: 1641076200
+     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
+     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     */
       createdAfter?: Date;
       
      /** Only return files created before the provided date. 
-     * Accepts any valid date string or object
+     * Accepts any valid date string or object (exclusive)
      * default: null
      * @example 
      * createdBefore: new Date(...)

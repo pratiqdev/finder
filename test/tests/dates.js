@@ -73,11 +73,11 @@ describe('DATES', () => {
 
     it('Returns files in the correct date range (createdBefore: "2020")', () => {
         const data = finder({ createdBefore: '2000' })
-        // const years = getYears(data)
+        const years = getYears(data)
         console.log(data.files.map(x => `${x.name}: \n${x.created}`))
-        // expect(finder({ createdBefore: '2020' }).files.length).to.eq(9)
-        // expect(years).to.include('2020')
-        // expect(years).to.not.include('2021')
+        expect(data.files.length).to.eq(9)
+        expect(years).to.include('1999')
+        expect(years).to.not.include('2020')
     })
 
 
