@@ -13,90 +13,79 @@
  * createdAfter | `Date` | Only return files created after provided date
  * createdBefore | `Date` | Only return files created before provided date
  * sortBy | `SortMethod` | Sort the results with the provided method
- * sortOrder | `SortOrder`
- * replaceBase
- * 
- * 
- * 
- * 
+ * sortOrder | `SortOrder` | Sort the results in ascending or descending order
+ * replaceBase | `string` | Replace the common baseUrl with a short string
  */
+
 export type FinderConfig = {
 
     /** Array of path strings to search within 
-     * default: '.' (current directory)
+     * default: `.` (current directory)
      * @example paths: ['myDir', '../../this-whole-dir'], */
     paths: string[];
 
     /** Array of paths to ignore 
-     * default: ['node_modules', '.git']
+     * default: `['node_modules', '.git']`
      * @example ignorePaths: ['../tests'], */
      ignorePaths?: string[];
      
      /** Array of file types to ignore.
-     * default: ['lock']
+     * default: `['lock']`
      * @example ignoreTypes: ['test.js'], */
     ignoreTypes?: string[];
 
     /** Only return files that match the provided types.
-     * default: []
+     * default: `[]`
      * @example onlyTypes: ['md', 'txt'], */
     onlyTypes?: string[];
 
     /** Maximum depth to recursively search directories during search.  
-     * default: 100.
+     * default: `100`.
      * @example maxDepth: 8, */
     maxDepth?: number;
 
     /** Only return files modified after the provided date.  
      * Accepts any valid date string or object (exclusive)
-     * default: null
+     * default: `null`
      * @example 
-     * createdBefore: new Date(...)
-     * createdBefore: '01/24/1991'
-     * createdBefore: 1641076200
-     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
-     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
      */
     modifiedAfter?: Date;
 
     /** Only return files modified before the provided date.  
      * Accepts any valid date string or object (exclusive)
-     * default: null
+     * default: `null`
      * @example 
-     * createdBefore: new Date(...)
-     * createdBefore: '01/24/1991'
-     * createdBefore: 1641076200
-     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
-     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
      */
      modifiedBefore?: Date;
      
      /** Only return files created after the provided date.  
      * Accepts any valid date string or object (exclusive)
-      * default: null
+      * default: `null`
      * @example 
-     * createdBefore: new Date(...)
-     * createdBefore: '01/24/1991'
-     * createdBefore: 1641076200
-     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
-     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
      */
       createdAfter?: Date;
       
      /** Only return files created before the provided date. 
      * Accepts any valid date string or object (exclusive)
-     * default: null
+     * default: `null`
      * @example 
-     * createdBefore: new Date(...)
-     * createdBefore: '01/24/1991'
-     * createdBefore: 1641076200
-     * createdBefore: 'Sun, 30 Apr 2023 15:30:00 GMT' // RFC 2822
-     * createdBefore: yyyy-mm-ddTHH:MM:ss.sssZ // ISO 8601
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
      */
      createdBefore?: Date;
      
      /** Sort the resulting file data by name, date, type, .etc 
-      * default: null
+      * default: `null`
       * @example 
       * sortBy: 'name', 
       * sortBy: 'size', 
@@ -111,7 +100,7 @@ export type FinderConfig = {
      sortOrder?: SortOrder;
      
      /** Replace the full file path with this string/path
-     * default: null
+     * default: `null`
      * @example replaceBase: '<base>/'
      * outputs: '<base>/path/to/file.txt'
      */
@@ -127,7 +116,7 @@ export type SortOrder = 'asc' | 'desc'
 export type SortMethod = 'name' | 'size' | 'type' | 'created' | 'modified' | 'date'
 
 
-export type FinderFileStat = {
+export type FinderStat = {
     /** Full path to the file */
     path: string;
 
@@ -161,14 +150,16 @@ export type FinderReturn =  {
     names: string[];
 
     /** Array of resulting file data */
-    files: FinderFileStat[];
+    files: FinderStat[];
 
     /** The most recently modified or created file */
-    newest: null | FinderFileStat;
+    newest: null | FinderStat;
 
     /** The least recently modified or created file */
-    oldest: null | FinderFileStat;
+    oldest: null | FinderStat;
 
+    /** A map of the directory structure where values are file maps or path strings  */
+    dirMap: Object;
 }
 
 export type Finder = (config?: string | FinderConfig) => FinderReturn;

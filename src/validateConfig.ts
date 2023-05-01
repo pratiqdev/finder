@@ -19,7 +19,7 @@ function getDateFromNegativeUnixTimestampOrString(timestamp: string | number) {
         // only parse time strings this way if they start with '-'
         const match = timestamp.match(/(-?\d+)([dhm])/);
         if (match) {
-            const value = parseInt(match[1]);
+            const value = Math.abs(parseInt(match[1]));
             const unit = match[2];
             log.validate(`Parsed offset: ${value}  ${unit}`)
             switch (unit) {

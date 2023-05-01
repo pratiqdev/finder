@@ -23,15 +23,16 @@
   - [createdBefore](#createdbefore)
   - [sortBy](#sortby)
   - [sortOrder](#sortorder)
+  - [replaceBase](#replacebase)
 - [Date Formats](#date-formats)
   - [Standard Date Formats](#standard-date-formats)
   - [Relative Date Formats](#relative-date-formats)
 - [File Extensions](#file-extensions)
-- [Types](#types)
+- [Type Definitions](#type-definitions)
   - [Finder](#finder)
   - [FinderConfig](#finderconfig)
   - [FinderReturn](#finderreturn)
-  - [FinderFileStat](#finderfilestat)
+  - [FinderStat](#finderstat)
   - [SortMethod](#sortmethod)
   - [SortOrder](#sortorder-1)
 - [License](#license)
@@ -146,9 +147,14 @@ const fileData = finder({
 
 # Config Options
 
+View the method definitions and examples below to get an idea of how to use the config
+parameters. Check the [Type Definitions](#type-definitions) to look deeper into accepted
+values and types.
+
 ## paths
 An array of path strings pointing to directories to search within. Defaults to the current 
-directory.
+directory.   
+Default: `['.']  process.cwd()`
 ```ts
 finder({
     paths: [ './my/content', 'dist/bin' ],
@@ -157,7 +163,8 @@ finder({
 <br />
 
 ## ignorePaths
-Array of paths to ignore.
+Array of paths to ignore.  
+Default: `['node_modules', '.git']`
 ```ts
 finder({
     ignorePaths: [ 'node_modules', '.git' ]
@@ -166,7 +173,8 @@ finder({
 <br />
 
 ## ignoreTypes
- Array of file types to ignore. Overrides matching `onlyTypes`. 
+Array of file types to ignore. Overrides matching `onlyTypes`.  
+default: `['lock', '.gitignore']`
 ```ts
 finder({
     ignoreTypes: [ 'd.ts', 'config.json' ]
@@ -175,7 +183,8 @@ finder({
 <br />
 
 ## onlyTypes
-Only return files that match the provided types. Will be overridden by matching `ignoreTypes`.
+Only return files that match the provided types. Will be overridden by matching `ignoreTypes`.  
+Default: `[]`
 ```ts
 finder({
     onlyTypes: [ 'node_modules', '.git' ]
@@ -185,7 +194,8 @@ finder({
 
 ## maxDepth
 Maximum depth to recursively search directories during search. A value of 1 will only search 
-a single level of nesting. Defaults to 100.
+a single level of nesting.  
+Default: `100`
 ```ts
 finder({
     maxDepth: 3
@@ -194,8 +204,8 @@ finder({
 <br />
 
 ## modifiedAfter
-Only return files modified after the provided date. 
-Accepts any valid date type
+Only return files modified after the provided date.  
+default: `null`
 ```ts
 finder({
     modifiedAfter:  
@@ -204,7 +214,8 @@ finder({
 <br />
 
 ## modifiedBefore
-O
+Only return files modified before the provided date.  
+default: `null`
 ```ts
 finder({
     modifiedBefore: [ 'node_modules', '.git' ]
@@ -213,7 +224,8 @@ finder({
 <br />
 
 ## createdAfter
-O
+Only return files created after the provided date.  
+default: `null`
 ```ts
 finder({
     createdAfter: [ 'node_modules', '.git' ]
@@ -222,7 +234,8 @@ finder({
 <br />
 
 ## createdBefore
-O
+Only return files created before the provided date.  
+default: `null`
 ```ts
 finder({
     createdBefore: [ 'node_modules', '.git' ]
@@ -231,19 +244,31 @@ finder({
 <br />
 
 ## sortBy
-O
+The property used to sort the resulting files array, or maintain insertion order.  
+Default: `null`
 ```ts
 finder({
-    sortBy: [ 'node_modules', '.git' ]
+    sortBy: 'name'
 })
 ```
 <br />
 
 ## sortOrder
-O
+The order used to sort the resulting files array, or maintain insertion order.  
+Default: `null`
 ```ts
 finder({
-    sortOrder: [ 'node_modules', '.git' ]
+    sortOrder: 'desc'
+})
+```
+
+## replaceBase
+A string used to replace the baseUrl or root dir of the paths searched. Helps in reducing `dirMap` 
+complexity and `stat.path` length.  
+Default: `null`
+```ts
+finder({
+    sortOrder: 'desc'
 })
 ```
 
@@ -336,31 +361,187 @@ ts      // test.ts
 <br />
 <!-- ================================================================================= -->
 
-# Types
+# Type Definitions
 
 ## Finder
 ```ts
+export type Finder = (config?: string | FinderConfig) => FinderReturn;
 ```
 
 ## FinderConfig
 ```ts
+/**
+ * Config object for finder
+ * 
+ * | Property | Type | Description
+ * |:--|:--|:--|
+ * paths | `string[]` | Array of paths to search within
+ * ignorePaths | `string[]` | Ignore file paths
+ * ignoreTypes | `string[]` | Ignore file types
+ * onlyTypes | `string[]` | Only return matching types
+ * maxDepth | `number` | Maximum directory search depth
+ * modifiedAfter | `Date` | Only return files modified after provided date
+ * modifiedBefore | `Date` | Only return files modified before provided date
+ * createdAfter | `Date` | Only return files created after provided date
+ * createdBefore | `Date` | Only return files created before provided date
+ * sortBy | `SortMethod` | Sort the results with the provided method
+ * sortOrder | `SortOrder` | Sort the results in ascending or descending order
+ * replaceBase | `string` | Replace the common baseUrl with a short string
+ */
+
+export type FinderConfig = {
+
+    /** Array of path strings to search within 
+     * default: `.` (current directory)
+     * @example paths: ['myDir', '../../this-whole-dir'], */
+    paths: string[];
+
+    /** Array of paths to ignore 
+     * default: `['node_modules', '.git']`
+     * @example ignorePaths: ['../tests'], */
+     ignorePaths?: string[];
+     
+     /** Array of file types to ignore.
+     * default: `['lock']`
+     * @example ignoreTypes: ['test.js'], */
+    ignoreTypes?: string[];
+
+    /** Only return files that match the provided types.
+     * default: `[]`
+     * @example onlyTypes: ['md', 'txt'], */
+    onlyTypes?: string[];
+
+    /** Maximum depth to recursively search directories during search.  
+     * default: `100`.
+     * @example maxDepth: 8, */
+    maxDepth?: number;
+
+    /** Only return files modified after the provided date.  
+     * Accepts any valid date string or object (exclusive)
+     * default: `null`
+     * @example 
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
+     */
+    modifiedAfter?: Date;
+
+    /** Only return files modified before the provided date.  
+     * Accepts any valid date string or object (exclusive)
+     * default: `null`
+     * @example 
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
+     */
+     modifiedBefore?: Date;
+     
+     /** Only return files created after the provided date.  
+     * Accepts any valid date string or object (exclusive)
+      * default: `null`
+     * @example 
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
+     */
+      createdAfter?: Date;
+      
+     /** Only return files created before the provided date. 
+     * Accepts any valid date string or object (exclusive)
+     * default: `null`
+     * @example 
+     * modifiedAfter: '01/24/1991'
+     * modifiedAfter: 1641076200
+     * modifiedAfter: '-20m'
+     */
+     createdBefore?: Date;
+     
+     /** Sort the resulting file data by name, date, type, .etc 
+      * default: `null`
+      * @example 
+      * sortBy: 'name', 
+      * sortBy: 'size', 
+      * */
+     sortBy?: SortMethod;
+     
+     /** Set the sort order use when sorting by name, size, date, .etc
+      * @example 
+      * sortOrder: 'desc',
+      * sortOrder: 'asc',
+      */
+     sortOrder?: SortOrder;
+     
+     /** Replace the full file path with this string/path
+     * default: `null`
+     * @example replaceBase: '<base>/'
+     * outputs: '<base>/path/to/file.txt'
+     */
+    replaceBase?: string;
+}
 ```
 
 ## FinderReturn
-
 ```ts
+export type FinderReturn =  {
+    /** Total number of files accumulated */
+    length: number;
+
+    /** Base directory of file search */
+    baseDir: null | string;
+
+    /** Array of file types accumulated */
+    types: string[];
+
+    /** Array of file names accumulated */
+    names: string[];
+
+    /** Array of resulting file data */
+    files: FinderStat[];
+
+    /** The most recently modified or created file */
+    newest: null | FinderStat;
+
+    /** The least recently modified or created file */
+    oldest: null | FinderStat;
+
+    /** A map of the directory structure where values are file maps or path strings  */
+    dirMap: Object;
+}
 ```
 
-## FinderFileStat
+## FinderStat
 ```ts
+export type FinderStat = {
+    /** Full path to the file */
+    path: string;
+
+    /** File name - split at last '/' */
+    name: string;
+
+    /** Inferred file type */
+    type: string;
+
+    /** File size (in bytes) */
+    size: number;
+    
+    /** Last file modification date */
+    modified: Date;
+
+    /** File created date */
+    created: Date;
+}
 ```
 
 ## SortMethod
 ```ts
+/** Possible options for sort methods */
+export type SortMethod = 'name' | 'size' | 'type' | 'created' | 'modified' | 'date'
 ```
 
 ## SortOrder
 ```ts
+/** Possible options for sort orders */
+export type SortOrder = 'asc' | 'desc'
 ```
  
 

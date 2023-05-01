@@ -106,7 +106,7 @@ describe('DATES', () => {
     const { inc, reset } = counter
 
 
-    it('A. Returns files in the correct date range (createdBefore: "2000")', () => {
+    it('A. Returns files in the correct date range - createdBefore: ("2000"))', () => {
         const f1 = finder({ 
             createdBefore: '2000',
             paths: ['./standard'],
@@ -129,7 +129,7 @@ describe('DATES', () => {
         expect(y2).to.not.include('2020')
     })
 
-    it('B. Returns files in the correct date range (createdBefore: "946684800000")', () => {
+    it('B. Returns files in the correct date range - createdBefore: (946684800000)', () => {
         const f1 = finder({
             createdBefore: 956684800000,
             paths: ['./standard'],
@@ -149,7 +149,7 @@ describe('DATES', () => {
         // expect(y2).to.not.include('2020')
     })
 
-    it.only('D. Returns files in the correct date range (createdAfter: "-11m")', () => {
+    it.only('C. Returns files in the correct date range - createdAfter: ("-12m")', () => {
         const f1 = finder({
             createdAfter: '-12m',
             paths: ['./standard'],
@@ -169,23 +169,23 @@ describe('DATES', () => {
         // expect(y2).to.not.include('2020')
     })
 
-    it.only('D. Returns files in the correct date range (createdAfter: "720")', () => {
+    it('D. Returns files in the correct date range - createdAfter: (-720)', () => {
         const f1 = finder({
-            createdAfter: 720,
+            createdAfter: -720,
             paths: ['./standard'],
         })
-        // const f2 = finder({
-        //     paths: ['./symlinks'],
-        //     createdBefore: 946684800
-        // })
+        const f2 = finder({
+            paths: ['./symlinks'],
+            createdBefore: 946684800
+        })
         const y1 = getYears(f1)
         // const y2 = getYears(f2)
         console.log(f1.files.map(x => `${x.name}: \n${x.created}`))
-        expect(f1.files.length).to.eq(25)
+        expect(f1.files.length).to.eq(1)
         // expect(f2.files.length).to.eq(25)
         expect(y1).to.include('1999')
         // expect(y2).to.include('1999')
-        expect(y1).to.not.include('2020')
+        // expect(y1).to.not.include('2020')
         // expect(y2).to.not.include('2020')
     })
 

@@ -49,7 +49,7 @@ const createOffsetDate = (offset) => {
         // only parse time strings this way if they start with '-'
         const match = offset.match(/(-?\d+)([dhm])/);
         if (match) {
-            const value = parseInt(match[1]);
+            const value = Math.abs(parseInt(match[1]));
             const unit = match[2];
             console.log(`Creating offset date from ${value}:${unit}`)
             switch (unit) {
@@ -75,7 +75,7 @@ const createOffsetDate = (offset) => {
         console.log(`Invalid offset argument. Returning date:`, d)
         return d
     }
-    let d = new Date(Date.now() + ms)
+    let d = new Date(Date.now() - ms)
     console.log(`Calculated date: ${ms} =>`, d.toString())
     return d
 }
