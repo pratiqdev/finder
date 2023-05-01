@@ -1,9 +1,10 @@
 
 
-<h4 align="center">
-<b><code>@pratiq/finder</code></b>
+<h4 align="center"><b><code>@pratiq/finder</code></b></h4>
 
 <br />
+
+<h4 align="center">
 
 Easily find and accumulate files by name, size, date and type.  
 
