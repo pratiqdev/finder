@@ -105,6 +105,8 @@ export type FinderConfig = {
      * outputs: '<base>/path/to/file.txt'
      */
     replaceBase?: string;
+
+    reader?: (file: FinderStat) => any;
 }
 
 
@@ -134,6 +136,11 @@ export type FinderStat = {
 
     /** File created date */
     created: Date;
+
+    /** Data returned from the reader function */
+    data?: any;
+
+    sym?: string;
 }
 
 export type FinderReturn =  {

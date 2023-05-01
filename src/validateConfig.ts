@@ -140,6 +140,11 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
     if (finalConfig.replaceBase && typeof finalConfig.replaceBase !== 'string') {
         throw new TypeError('Config Validation Error:\n"replaceBase" must be a string');
     }
+
+    if(finalConfig.reader && typeof finalConfig.reader !== 'function'){
+        throw new TypeError('Config Validation Error:\n"reader" must be a function');
+    }
+
     const DEFAULTS = {
         ignorePaths: ['node_modules', '.git'],
         ignoreTypes: ['lock'],

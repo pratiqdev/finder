@@ -1,6 +1,6 @@
 const { expect } = require('chai')
 const finder = require("../index.js")
-const mockFs = require('mock-fs')
+let mockFs = require('mock-fs')
 
 
 

@@ -63,17 +63,36 @@ const finder = require('@pratiq/finder')
 
 # Usage
 
+Get all files in the current directory
+```ts
+import finder from '@pratiq/finder'
 
+const data = finder()
+```
+
+<br />
+
+Get all files at a specific path, and ignore type def files (.d.ts files)
 ```ts
 import finder from '@pratiq/finder'
 
 const data = finder({
     paths: ['../my/content'],
     ignoreTypes: ['d.ts'],
-    modifiedAfter: '-10m'
 })
 ```
+<br />
 
+Get all markdown files from `./content` that have been modified in the last hour
+```ts
+import finder from '@pratiq/finder'
+
+const data = finder({
+    paths: ['./content'],
+    onlyTypes: ['md'],
+    modifiedAfter: '-1h'
+})
+```
 
 
 

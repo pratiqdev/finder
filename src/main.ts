@@ -1,8 +1,8 @@
-import { readdirSync, realpathSync, lstatSync, statSync, Stats, readlinkSync } from 'fs'
+import { readdirSync, realpathSync, lstatSync, statSync, Stats, readlinkSync, existsSync } from 'fs'
 import type { Dirent } from 'fs'
-import {resolve, extname } from 'path'
+import {resolve, extname, join } from 'path'
 
-import { Finder, FinderConfig } from './types.js'
+import { Finder, FinderConfig, FinderStat } from './types.js'
 import { log, colors } from './utils.js'
 import { validateConfig } from './validateConfig.js'
 
@@ -296,7 +296,7 @@ try{
     const files = SETTINGS.paths.map((path:string) => runFilter(path))
 
     const baseDirRegExp = new RegExp(basePath, 'g')
-    let uniqueFiles:any[] = []
+    let uniqueFiles:FinderStat[] = []
     const filePathMap:string[] = []
 
     files.flat().forEach((file:any) => {
@@ -336,11 +336,11 @@ try{
         }
         if(SETTINGS.sortBy === 'created'){
             log.sort('Sorting by: created date')
-            uniqueFiles = uniqueFiles.sort((a,b) => a.ctime > b.ctime ? sortX : sortY)
+            uniqueFiles = uniqueFiles.sort((a,b) => a.created > b.created ? sortX : sortY)
         }
         if(SETTINGS.sortBy === 'modified' || SETTINGS.sortBy === 'date'){
             log.sort('Sorting by: modified date')
-            uniqueFiles = uniqueFiles.sort((a,b) => a.mtime > b.mtime ? sortX : sortY)
+            uniqueFiles = uniqueFiles.sort((a,b) => a.modified > b.modified ? sortX : sortY)
         }
         if(SETTINGS.sortBy === 'type'){
             log.sort('Sorting by: type')
@@ -352,21 +352,92 @@ try{
 
     let newest:any = null
     let oldest:any = null
-    let names:string[] = uniqueFiles.map(x => x.name)
+    let names:string[] = []
     let types: string[] = []
 
-    
+// ```js
+// let basePath = '/home/shlep/Documents/code/finder/'
+// let symPath = './DIR_B/md_B-2.md'
+// // actual path: '/home/shlep/Documents/code/finder/misc/DIR_B/md_B-2.md'
+// let res = resolve(basePath, symPath)
+// ```
+
     
     const fileDirectoryMap:any = {};
-    
-    uniqueFiles.forEach((file) => {
-        if(!newest || file.mtime > newest.mtime){ newest = file }
-        if(!oldest || file.mtime < newest.mtime){ oldest = file }
-    
+
+    uniqueFiles = uniqueFiles.map((file: FinderStat) => {
+        names.push(file.name)
+        if(!newest || file.modified > newest.modified){ newest = file }
+        if(!oldest || file.modified < newest.modified){ oldest = file }
+        
         if(!types.includes(file.type)){
             types.push(file.type)
         }
+        // file.sym = file.path
+        if(lstatSync(file.path).isSymbolicLink()){
+            console.log('>> Path is symlink:', file.path)
+            try{
+                if (!existsSync(file.path)) {
+                    console.log('>> Raw file path does not exist:', file.path)
+                    console.log('>> Attempting readLinkSync...')
+                    let symPath = readlinkSync(file.path)
+                    console.log('>> Found symlink path:', symPath)
+                    
+                    console.log('>> Attempting resolve full symlink path...')
+                    let resolvedSymPath = ''
 
+                    SETTINGS.paths.forEach(pathSegment => {
+                        try{
+                            if(resolvedSymPath) return;
+                            let resX = resolve(pathSegment)
+                            let res1 = resolve(basePath)
+                            let res2 = join(...pathSegment.split('/'), ...symPath.split('/'))
+
+
+                        
+
+                            console.log({
+                                resX,
+                                res1,
+                                res2,
+                            })
+
+
+                            let res = resolve(pathSegment)
+                            console.log('>> Joined path:', res)
+                            if(existsSync(res)){
+                                resolvedSymPath = res
+                                console.log('>> Resolved symlink full path:', res)
+                            }else{
+                                console.log(`>> Resolved symlink does not exist "${res}"... trying again...`)
+
+                            }
+                        }catch(err){
+                            console.log(`>> Resolved symlink path error:`, err)
+                        }
+                    })
+
+
+                    console.log('>> Checking if resolved sym path exists...')
+                    if(existsSync(resolvedSymPath)){
+                        console.log(`>> Resolved symlink and file does exist:`, resolvedSymPath)
+                        file.sym = resolvedSymPath
+                    }else{
+                        console.log(`>> Resolved symlink does not exist:`, file.path)
+                    }
+                    console.log('\n')
+                }
+            }catch(err){
+                console.log(`Error getting symlink path:`, err)
+            }
+        }
+        if(SETTINGS.reader){
+            file.data = SETTINGS.reader(file)
+        }
+        return file
+    })
+    
+    uniqueFiles.forEach((file:FinderStat) => {
         let currentObj = fileDirectoryMap;
         let filePath:any
         if(SETTINGS.replaceBase){
