@@ -44,7 +44,7 @@ const createOffsetDate = (offset) => {
     let ms;
     if (typeof offset === 'number'  && timestamp < 0) {
         // usage of a number will always refer to negative time travel
-        ms = Math.abs(offset * 1000);
+        ms = Math.abs(offset);
     } else if (typeof offset === 'string' && offset.startsWith('-')) {
         // only parse time strings this way if they start with '-'
         const match = offset.match(/(-?\d+)([dhm])/);

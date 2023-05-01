@@ -8,7 +8,7 @@ const {
 } = require('../base.js')
 
 
-describe.skip('PATHS', () => {
+describe('PATHS', () => {
     beforeEach(() => {
         mockFs({
             'symlink_to_file1': mockFs.symlink({

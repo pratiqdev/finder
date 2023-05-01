@@ -7,7 +7,7 @@ const {
     createOffsetDate,
 } = require('../base.js')
 
-describe.skip('Basics', () => {
+describe('Basics', () => {
 
     it('Provides a function exported as default', () => {
         expect(typeof finder).to.eq('function')

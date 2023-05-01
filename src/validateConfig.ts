@@ -11,7 +11,7 @@ function getDateFromNegativeUnixTimestampOrString(timestamp: string | number) {
     let ms;
     if (typeof timestamp === 'number' && timestamp < 0) {
         // usage of a number will always refer to negative time travel
-        ms = Math.abs(timestamp * 1000);
+        ms = Math.abs(timestamp);
         log.validate('Time is a "number". Calculating negative time offset:', ms)
 
     } else if (typeof timestamp === 'string' && timestamp.startsWith('-')) {
