@@ -35,7 +35,15 @@ const returnTest = (data) => {
 
 const createOffsetDate = (offset) => new Date(Date.now() - (offset * 1000))
 
-const createMockFileWithDate = (date) => mockFs.file({
+const createMockFileWithDate = (date, symlink) => symlink
+? mockFs.symlink({
+    path: symlink,
+    birthtime: date,
+    mtime: date,
+    ctime: date,
+    atime: date,
+})
+: mockFs.file({
     birthtime: date,
     mtime: date,
     ctime: date,
