@@ -1,11 +1,10 @@
 
-**Easily find and accumulate files by name, size, date and type.**
 
-<!-- TODO : add more details to examples, setup, possible issues, contributing, "why" section -->
-
-
+<h3 align="center">
 
 <b>
+Easily find and accumulate files by name, size, date and type.
+
 
 [Installation](#installation)
 &nbsp;•&nbsp;
@@ -18,6 +17,7 @@
 [Extensions](#file-types--extensions)
 &nbsp;•&nbsp;
 [API](#api)
+</h3>
 
 </b>
 
