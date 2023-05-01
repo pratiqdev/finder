@@ -1,8 +1,6 @@
 
 
-<h4 align="center"><b><code>@pratiq/finder</code></b></h4>
-
-<br />
+<h3 align="center"><b>finder</b></h3>
 
 <h4 align="center">
 
