@@ -67,6 +67,8 @@ try{
     //+ Added support for symlinks
     //! No current logic for recursive link resolving
     //! Add array of visited paths to compare against
+    const direntCache:string[] = []
+
     const getDirents = (_path: string): Array<Dirent | string> => {
         let dirStat: Stats = lstatSync(_path);
         if (dirStat.isSymbolicLink()) {
@@ -76,7 +78,7 @@ try{
             _path = resolvedPath;
         }
         // this is where rcursion starts: try to readdirSync on symlinkA -> contains symlinkB which points to symlinkA
-        return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path];
+        return dirStat.isDirectory() ? readdirSync(_path, { withFileTypes: true }) : [_path] // [_path];
     }
 
     const getPathDetails = (dirent: Dirent | string, _path: string): { resolvedPath: string, isDirectory: boolean } => {
@@ -119,7 +121,7 @@ try{
 
     //&                                                                                     SETTINGS
     let SETTINGS:FinderConfig = { paths: [] }
-
+    
     if(typeof config === 'string'){
         SETTINGS = validateConfig({
             paths: [config]
@@ -128,18 +130,13 @@ try{
         SETTINGS = validateConfig(config)
     }
     
-    log.init('Settings:', SETTINGS)
 
 
 
     //&                                                                                   DATE FUNCS
     var dateFuncs = {
         convert:function(d:any):Date {
-            return typeof d === 'string' || typeof d === 'number'
-                ? new Date(d)
-                : d instanceof Date
-                    ? d
-                    : new Date(d)
+            return d instanceof Date ? d : new Date(d)
         },
         compare:function(a:any,b:any) {
 
@@ -148,8 +145,8 @@ try{
                 b = Date.now() + (b * 1000)
             }
             return (
-                isFinite(a=this.convert(a).valueOf()) &&
-                isFinite(b=this.convert(b).valueOf()) ?
+                isFinite(this.convert(a).valueOf()) &&
+                isFinite(this.convert(b).valueOf()) ?
                 //@ts-ignore
                 (a>b)-(a<b) :
                 NaN
@@ -158,9 +155,9 @@ try{
         inRange:function(d:any,start:any,end:any) {
 
            return (
-                isFinite(d=this.convert(d).valueOf()) &&
-                isFinite(start=this.convert(start).valueOf()) &&
-                isFinite(end=this.convert(end).valueOf()) ?
+                isFinite(this.convert(d).valueOf()) &&
+                isFinite(this.convert(start).valueOf()) &&
+                isFinite(this.convert(end).valueOf()) ?
                 start <= d && d <= end :
                 NaN
             );
@@ -231,7 +228,7 @@ try{
     //&                                                                                       FILTER
     const runFilter = (path:string) => {
         let files = getFiles(path) || []
-    
+
         files = files.filter(file => {
             if(!file){
                 log.filter('Filtering - no file found')
@@ -284,7 +281,7 @@ try{
             
             if(SETTINGS.createdBefore){
                 let compare = dateFuncs.compare(file.created, SETTINGS.createdBefore) <= 0
-                log.dates(`Created before "${SETTINGS.createdBefore}" - ${compare}`)
+                log.dates(`Created before "${SETTINGS.createdBefore}" - ${file.created} : ${compare}`)
                 return compare
             }
             log.dates('No date restrictions set, returning true')
@@ -296,7 +293,7 @@ try{
     }
 
 
-
+    log.init(`Accumulating files...`)
 
     //&                                                                                        START
     const files = SETTINGS.paths.map((path:string) => runFilter(path))
@@ -391,6 +388,8 @@ try{
             currentObj = currentObj[pathSegment];
         });
     });
+
+    log.init(`File accumulation and filtering complete.`)
     
     return {
         length: uniqueFiles.length,

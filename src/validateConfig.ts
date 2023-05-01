@@ -1,6 +1,47 @@
-import { FinderConfig } from './types'; // Adjust the path as needed
+import { Finder, FinderConfig } from './types'; // Adjust the path as needed
+import { log } from './utils';
+
+function getDateFromNegativeUnixTimestampOrString(negativeUnixTimestampOrString: string | number) {
+    if(!negativeUnixTimestampOrString) {
+        log.validate('no timestamp, returning...')
+        return
+    }
+
+    log.validate('Getting date from time:', negativeUnixTimestampOrString)
+    let timestampInMilliseconds;
+    if (typeof negativeUnixTimestampOrString === 'number' && negativeUnixTimestampOrString < 0) {
+        timestampInMilliseconds = -negativeUnixTimestampOrString * 1000;
+    } else if (typeof negativeUnixTimestampOrString === 'string' && negativeUnixTimestampOrString.startsWith('-')) {
+        const match = negativeUnixTimestampOrString.match(/(-?\d+)([dhm])/);
+        if (match) {
+            const value = parseInt(match[1]);
+            const unit = match[2];
+            switch (unit) {
+                case 'd':
+                    timestampInMilliseconds = -value * 24 * 60 * 60 * 1000;
+                    break;
+                case 'h':
+                    timestampInMilliseconds = -value * 60 * 60 * 1000;
+                    break;
+                case 'm':
+                    timestampInMilliseconds = -value * 60 * 1000;
+                    break;
+                default:
+                    throw new Error(`Invalid time unit: ${unit}`);
+            }
+        } else {
+            throw new Error(`Invalid time string: ${negativeUnixTimestampOrString}`);
+        }
+    } else {
+        // throw new Error(`Invalid argument type: ${typeof negativeUnixTimestampOrString}`);
+        return  new Date(negativeUnixTimestampOrString)
+    }
+    return new Date(timestampInMilliseconds);
+}
+
 
 export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
+    log.validate(`Validating config object...`)
     const defaultConfig: FinderConfig = {
         paths: ['.'],
         ignorePaths: ['node_modules', '.git'],
@@ -9,7 +50,7 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
         maxDepth: 100,
     };
 
-    const finalConfig: FinderConfig = { ...defaultConfig, ...config };
+    const finalConfig: FinderConfig = { ...defaultConfig, ...config }
 
     if (!Array.isArray(finalConfig.paths)) {
         throw new TypeError('Config Validation Error:\n"paths" must be an array of strings');
@@ -37,7 +78,7 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
     const dateEntryTypes = ['string', 'number', 'object'];
 
     ['modifiedAfter', 'modifiedBefore', 'createdAfter', 'createdBefore'].forEach(
-        (dateKey) => {
+        (dateKey: string) => {
             const dateValue = finalConfig[dateKey as keyof FinderConfig] as
                 | Date
                 | null;
@@ -52,6 +93,13 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
                     `Config Validation Error:\n"${dateKey}" must be a valid FinderDateEntry (Date | string | [number, number, number] | {year:number, month:number, date:number})`
                 );
             }
+
+            let key = dateKey as keyof FinderConfig
+            let val = finalConfig[key] 
+            
+            finalConfig[key] = getDateFromNegativeUnixTimestampOrString(val as any) as unknown as never
+
+
         }
     );
 
@@ -81,8 +129,10 @@ export function validateConfig(config: Partial<FinderConfig>): FinderConfig {
         ignoreTypes: ['lock'],
     }
 
-    if (!finalConfig.ignoreTypes) finalConfig.ignoreTypes = DEFAULTS.ignoreTypes
-    if (!finalConfig.ignorePaths) finalConfig.ignorePaths = DEFAULTS.ignorePaths
+    // if (!finalConfig.ignoreTypes) finalConfig.ignoreTypes = DEFAULTS.ignoreTypes
+    // if (!finalConfig.ignorePaths) finalConfig.ignorePaths = DEFAULTS.ignorePaths
+
+    log.validate(`Parsed and validated config object:`, finalConfig)
 
     return finalConfig;
 }

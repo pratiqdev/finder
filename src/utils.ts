@@ -3,6 +3,7 @@ import debug from 'debug'
 
 export const log = {
     init: debug('@pq:finder:init'),
+    validate: debug('@pq:finder:validate'),
     getFiles: debug('@pq:finder:getFiles'),
     type: debug('@pq:finder:type'),
     dates: debug('@pq:finder:dates'),
